@@ -9,6 +9,8 @@ int main(int argc, char** argv)
     if(createServerFiles() == -1)
         exit (EXIT_FAILURE);
     
+    //fuck netbeans
+    
     pClient clientList = NULL;
     Exit = false;
     Filter = true;
