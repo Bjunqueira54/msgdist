@@ -38,14 +38,14 @@ int main(int argc, char** argv)
     
     if(fork() == 0) {
         close(0);
-        dup2(p[0]);
+        dup2(p[0],0);
         close(p[1]);
         
-        execl(verificador, verificador, "badwords.txt", NULL);
+        execlp("./verificador", "./verificador", "..\badwords.txt", NULL);
     }
     
     close(1);
-    dup2(p[1]);
+    dup2(p[1],1);
     close(p[0]);
     
     fprintf(stdout, "'help' para ajuda\n");
