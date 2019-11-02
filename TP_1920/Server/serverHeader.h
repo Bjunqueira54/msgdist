@@ -32,7 +32,10 @@ typedef struct client Client, *pClient;
 #include "client.h"
 #include "serverInterface.h"
 
+#define BADWORDS "badwords.txt"
+
 extern int maxMessages;
+extern int childPID;
 extern bool Exit;
 extern bool Filter;
 

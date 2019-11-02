@@ -14,7 +14,8 @@ int main(int argc, char** argv)
     pClient clientList = NULL;
     Exit = false;
     Filter = true;
-    int maxMessage, maxNot, p[2];
+    childPID = 1;
+    int maxMessage, maxNot;
     char* wordNot;
     char cmd[CMD_SIZE];
     struct sigaction cDisconnect, cSignal;
@@ -33,13 +34,8 @@ int main(int argc, char** argv)
     if(getenv("WORDNOT") != NULL)
         wordNot = getenv("WORDNOT");
   
-    
-    pipe(p);
-    
-    //initializeVerifier(p);
-    
-    //escrever para a extremidade do pipe p[1]
-    
+    //escrever para a extremidade do pipe p[1]  
+    //kill(childPID, SIGUSR2); -> para emergencias
     
     fprintf(stdout, "'help' para ajuda\n");
     
@@ -48,13 +44,11 @@ int main(int argc, char** argv)
         serverMainOutput(0);
         fgets(cmd, CMD_SIZE, stdin);
         
-        /*char *c = "##MSGEND##";
-        write(p[1], c, sizeof(c));*/
-        
         serverMainLoop(cmd, clientList);
     }
     
     serverMainOutput(1);
+    
     
     return (EXIT_SUCCESS);
 }

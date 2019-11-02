@@ -2,16 +2,17 @@
 
 void initializeVerifier(int *p)
 {
-    if(fork() == 0) {
+    childPID = fork();
+    if(childPID == 0) {
         close(0);
         dup2(p[0],0);
         close(p[1]);
-        
-        execlp("./verificador", "verificador", "badwords.txt", NULL);
-        
+
+        execlp("./verificador", "verificador", BADWORDS, NULL);
+
         fprintf(stderr, "\nErro! Impossivel executar programa\n");
-        exit(0);
-    }    
+        exit(0); 
+    }
 }
 
 void serverMainLoop(char *cmd, pClient aux)
@@ -140,6 +141,19 @@ void listAllTopics()
 void deleteEmptyTopics() 
 {
     printf("recognized\n");
+}
+
+bool verifyNewMessage() { //recebe sinal do clinte que meteu uma nova mensagem. esta funcao cuida de verificar
+    int p[2];
+    
+    pipe(p);
+    
+    initializeVerifier(p);
+    
+    //recebe mensagem do pipe
+    
+    char *c = "##MSGEND##"; //tmp
+    write(p[1], c, sizeof(c));
 }
 
 int createServerFiles()
