@@ -1,53 +1,78 @@
 #include "serverHeader.h"
 
+void initializeVerifier(int *p)
+{
+    if(fork() == 0) {
+        close(0);
+        dup2(p[0],0);
+        close(p[1]);
+        
+        execlp("./verificador", "verificador", "badwords.txt", NULL);
+        
+        fprintf(stderr, "\nErro! Impossivel executar programa\n");
+        exit(0);
+    }    
+}
+
 void serverMainLoop(char *cmd, pClient aux)
 {
-    if(stringCompare(cmd, "shutdown"))
-    {
+    if(stringCompare(cmd, "shutdown")) {
         union sigval value;
         value.sival_int = 0;
-        
+
         while(aux != NULL)
         {
             sigqueue(aux->c_PID, SIGINT, value);
             aux = aux->next;
         }
-        
+
         Exit = true;
         return;
     }
-    else 
+    else
         if (parseCommands(cmd))
             return;
-    
-    serverMainOutput(2);
+        else
+            serverMainOutput(2);
 }
 
-bool parseCommands(char *cmd)
+bool parseCommands(char cmd[])
 {
-    if(stringCompare(cmd, "help"))
+    if(stringCompare(cmd, "help")) {
         serverMainOutput(3);
-    else if (stringCompare(cmd, "msg"))
+        return true;
+    }
+    else if (stringCompare(cmd, "msg") ) {
         listAllMesages();
-    else if (stringCompare(cmd, "users"))
+        return true;
+    }
+    else if (stringCompare(cmd, "users")) {
         listAllUsers();
-    else if (stringCompare(cmd, "topics"))
+        return true;        
+    }
+    else if (stringCompare(cmd, "topics")) {
         listAllTopics();
-    else if (stringCompare(cmd, "prune"))
+        return true;
+    }
+    else if (stringCompare(cmd, "prune")) {
         deleteEmptyTopics();
-    else if (stringCompare(cmd, "filter on"))
+        return true;
+    }
+    else if (stringCompare(cmd, "filter on")) {
         if (Filter == false)
             Filter = true;
-    else if (stringCompare(cmd, "filter off"))
+        return true;
+    }
+    else if (stringCompare(cmd, "filter off")) {
         if (Filter == true)
             Filter = false;
+        return true;
+    }
     else
         if(parseOptionCommands(cmd))
             return true;
-        else
-            return false;
-    
-    return true;
+        
+    return false;
 }
 
 bool parseOptionCommands(char cmd[])
@@ -88,6 +113,9 @@ bool parseOptionCommands(char cmd[])
 
 bool stringCompare(char *str1, char *str2) //TEM UM BUG
 {
+    if(strlen(str1) <= 1)
+        return false;
+        
     for (int i = 0; i < strlen(str1) - 1; i++)
         if(str1[i] != str2[i])
             return false;
@@ -96,22 +124,22 @@ bool stringCompare(char *str1, char *str2) //TEM UM BUG
 
 void listAllUsers() 
 {
-
+    printf("recognized\n");
 }
 
 void listAllMesages()
 {
-    
+    printf("recognized\n");
 }
 
 void listAllTopics()
 {
-    
+    printf("recognized\n");
 }
 
 void deleteEmptyTopics() 
 {
-    
+    printf("recognized\n");
 }
 
 int createServerFiles()

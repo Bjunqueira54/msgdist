@@ -36,7 +36,8 @@ extern int maxMessages;
 extern bool Exit;
 extern bool Filter;
 
-void serverMainLoop(char cmd[], pClient aux);
+void initializeVerifier(int* p);    
+void serverMainLoop(char *cmd, pClient aux);
 bool stringCompare(char *str1, char *str2);
 
 bool parseCommands(char cmd[]);

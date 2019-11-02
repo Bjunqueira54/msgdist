@@ -36,17 +36,10 @@ int main(int argc, char** argv)
     
     pipe(p);
     
-    if(fork() == 0) {
-        close(0);
-        dup2(p[0],0);
-        close(p[1]);
-        
-        execlp("./verificador", "./verificador", "../badwords.txt", NULL);
-    }
+    //initializeVerifier(p);
     
-    close(1);
-    dup2(p[1],1);
-    close(p[0]);
+    //escrever para a extremidade do pipe p[1]
+    
     
     fprintf(stdout, "'help' para ajuda\n");
     
@@ -54,6 +47,9 @@ int main(int argc, char** argv)
     while(!Exit) {
         serverMainOutput(0);
         fgets(cmd, CMD_SIZE, stdin);
+        
+        /*char *c = "##MSGEND##";
+        write(p[1], c, sizeof(c));*/
         
         serverMainLoop(cmd, clientList);
     }
