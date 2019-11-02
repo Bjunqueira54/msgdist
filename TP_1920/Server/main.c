@@ -41,7 +41,7 @@ int main(int argc, char** argv)
         dup2(p[0],0);
         close(p[1]);
         
-        execlp("./verificador", "./verificador", "..\badwords.txt", NULL);
+        execlp("./verificador", "./verificador", "../badwords.txt", NULL);
     }
     
     close(1);
