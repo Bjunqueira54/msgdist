@@ -1,6 +1,7 @@
 #include "clientHeader.h"
 
 bool Exit;
+int ServerPipe;
 
 //Client
 int main(int argc, char** argv)
@@ -47,7 +48,19 @@ int main(int argc, char** argv)
     pTopic TopicList = NULL;
     
     int current_topic_id = 0;
-    int action;
+    
+    ///////////
+    ///Pipes///
+    ///////////
+    
+    ServerPipe = open(SERVER_PID, O_RDONLY);
+    
+    if(ServerPipe == -1)
+    {
+        fprintf(stderr, "Server not running!");
+        getchar();
+        exit (EXIT_FAILURE);
+    }
     
     ///////////////////////
     ///Iniciar o ncurses///
@@ -145,8 +158,6 @@ int main(int argc, char** argv)
                 break;
         }
     }
-    
-    //pthread_join(notification_thread, NULL);
     
     endwin();
     

@@ -7,6 +7,8 @@ extern "C" {
 
 #include "clientHeader.h"
     
+    extern int ServerPipe;
+    
     void SendTextToServer(char*, pText);
     
     void RecieveTopicFromServer();
