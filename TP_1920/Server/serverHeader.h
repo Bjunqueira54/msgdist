@@ -36,6 +36,7 @@ typedef struct client Client, *pClient;
 
 extern int maxMessages;
 extern int childPID;
+extern int server_file;
 extern bool Exit;
 extern bool Filter;
 

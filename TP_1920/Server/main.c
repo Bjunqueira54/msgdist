@@ -2,6 +2,7 @@
 
 bool Exit;
 bool Filter;
+int childPID;
 
 //Server
 int main(int argc, char** argv)
@@ -48,6 +49,7 @@ int main(int argc, char** argv)
     }
     
     serverMainOutput(1);
+    
     
     
     return (EXIT_SUCCESS);

@@ -48,14 +48,15 @@ int main(int argc, char** argv)
     pTopic TopicList = NULL;
     
     int current_topic_id = 0;
+    int serverpidfd;
     
     ///////////
     ///Pipes///
     ///////////
     
-    ServerPipe = open(SERVER_PID, O_RDONLY);
+    serverpidfd = open(SERVER_PID, O_RDONLY);
     
-    if(ServerPipe == -1)
+    if(serverpidfd == -1)
     {
         fprintf(stderr, "Server not running!");
         getchar();

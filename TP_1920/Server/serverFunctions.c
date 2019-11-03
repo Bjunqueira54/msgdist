@@ -1,5 +1,7 @@
 #include "serverHeader.h"
 
+int server_file;
+
 void initializeVerifier(int *p)
 {
     childPID = fork();
@@ -168,8 +170,16 @@ int createServerFiles()
             return -1;
         }
     }
-        
-    int server_file = open(SERVER_PID, O_RDWR | O_CREAT, 0644);
+    
+    server_file = open(SERVER_PID, O_RDWR);
+    
+    if(server_file != -1)
+    {
+        fprintf(stderr, "Server already running\n");
+        exit (EXIT_FAILURE);
+    }
+    
+    server_file = open(SERVER_PID, O_RDWR | O_CREAT, 0644);
     
     if(server_file == -1)
     {
