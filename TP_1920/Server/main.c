@@ -16,7 +16,7 @@ int main(int argc, char** argv)
     Exit = false;
     Filter = true;
     childPID = 1;
-    int maxMessage, maxNot;
+    int maxMessage, maxNot, p[2];
     char* wordNot;
     char cmd[CMD_SIZE];
     struct sigaction cDisconnect, cSignal;
@@ -38,6 +38,10 @@ int main(int argc, char** argv)
     //escrever para a extremidade do pipe p[1]  
     //kill(childPID, SIGUSR2); -> para emergencias
     
+    pipe(p);
+    
+    initializeVerifier(p);
+
     fprintf(stdout, "'help' para ajuda\n");
     
     //Server Main Loop

@@ -146,12 +146,6 @@ void deleteEmptyTopics()
 }
 
 bool verifyNewMessage() { //recebe sinal do clinte que meteu uma nova mensagem. esta funcao cuida de verificar
-    int p[2];
-    
-    pipe(p);
-    
-    initializeVerifier(p);
-    
     //recebe mensagem do pipe
     
     char *c = "##MSGEND##"; //tmp
