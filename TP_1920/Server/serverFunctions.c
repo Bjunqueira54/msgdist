@@ -1,12 +1,15 @@
 #include "serverHeader.h"
 
-void initializeVerifier(int *p)
+int server_file;
+
+void initializeVerifier(int *servPipe, int *veriPipe)
 {
     childPID = fork();
     if(childPID == 0) {
-        close(0);
-        dup2(p[0],0);
-        close(p[1]);
+        dup2(veriPipe[1], 1);
+        close(veriPipe[1]);
+        dup2(servPipe[0],0);
+        close(servPipe[0]);
 
         execlp("./verificador", "verificador", BADWORDS, NULL);
 
@@ -144,16 +147,9 @@ void deleteEmptyTopics()
 }
 
 bool verifyNewMessage() { //recebe sinal do clinte que meteu uma nova mensagem. esta funcao cuida de verificar
-    int p[2];
-    
-    pipe(p);
-    
-    initializeVerifier(p);
-    
     //recebe mensagem do pipe
     
-    char *c = "##MSGEND##"; //tmp
-    write(p[1], c, sizeof(c));
+    
 }
 
 int createServerFiles()
@@ -168,8 +164,16 @@ int createServerFiles()
             return -1;
         }
     }
-        
-    int server_file = open(SERVER_PID, O_RDWR | O_CREAT, 0644);
+    
+    server_file = open(SERVER_PID, O_RDWR);
+    
+    if(server_file != -1)
+    {
+        fprintf(stderr, "Server already running\n");
+        exit (EXIT_FAILURE);
+    }
+    
+    server_file = open(SERVER_PID, O_RDWR | O_CREAT, 0644);
     
     if(server_file == -1)
     {

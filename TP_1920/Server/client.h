@@ -13,7 +13,7 @@ extern "C" {
         
         pid_t c_PID;
         pthread_t c_thread;
-        char* c_pipe;
+        int c_pipe;
         
         pClient next;
         pClient prev;

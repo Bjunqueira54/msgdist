@@ -269,6 +269,7 @@ void BackEndMessageCreation(WINDOW* win, char* TopicTitle)
     mvwaddstr(win, 2, 2, "Thank you for submitting a new message");
     mvwaddstr(win, 3, 2, "The server will recieve it in a few moments.");
     mvwaddstr(win, 5, 2, "(press any key to Continue...)");
+    wrefresh(win);
     
     getch();
     

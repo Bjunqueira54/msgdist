@@ -36,10 +36,11 @@ typedef struct client Client, *pClient;
 
 extern int maxMessages;
 extern int childPID;
+extern int server_file;
 extern bool Exit;
 extern bool Filter;
 
-void initializeVerifier(int* p);    
+void initializeVerifier(int* servPipe, int *veriPipe);    
 void serverMainLoop(char *cmd, pClient aux);
 bool stringCompare(char *str1, char *str2);
 
