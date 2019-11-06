@@ -24,7 +24,8 @@ extern "C" {
     pClient findClientByUsername(pClient listStart, char* username);
     pClient findClientByPID(pClient listStart, pid_t PID);
     void serverBroadcastExit(pClient listStart);
-    void clientSignals();
+    void clientSignals(int, siginfo_t*, void*);
+    void getClientPid(int, siginfo_t*, void*);
     
 #ifdef __cplusplus
 }

@@ -8,7 +8,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-    
+
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -21,18 +21,18 @@ extern "C" {
 #include <fcntl.h>
 #include <pthread.h>
 #include <ncurses.h>
-    
+
 #include "../typedefines.h"
-    
+
 #include "../msgdist_defaults.h"
 #include "../topic.h"
 #include "../text.h"
-    
+
 #include "Functions.h"
 #include "SigHandlers.h"
 #include "ThreadHandlers.h"
 #include "PipeFunctions.h"
-    
+
     extern bool Exit;
 
 #ifdef __cplusplus

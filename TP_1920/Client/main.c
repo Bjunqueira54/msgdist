@@ -12,12 +12,12 @@ int main(int argc, char** argv)
         fprintf(stdout, "Example usage: './client -u user1337'\n");
         exit (EXIT_FAILURE);
     }
-    
+
     char username[MAXUSERLEN];
     *username = 0;
-    
+
     char c = getopt(argc, argv, "u:");
-    
+
     switch(c)
     {
         case 'u':
@@ -29,7 +29,7 @@ int main(int argc, char** argv)
             exit (EXIT_FAILURE);
             break;
     }
-    
+
     if(*username == 0)
     {
         fprintf(stderr, "You didn't specify a username!\nEXITING!\n");
@@ -39,23 +39,24 @@ int main(int argc, char** argv)
     ////////////////////////////////
     ///Iniciar todas as variaveis///
     ////////////////////////////////
-    
+
     pid_t server_pid;
     pid_t self_pid;
-    
+
     pthread_t notification_thread;
     Exit = false;
     pTopic TopicList = NULL;
-    
+
     int current_topic_id = 0;
     int serverpidfd;
-    
+    char pid[6];
+
     ///////////
     ///Pipes///
     ///////////
-    
+
     serverpidfd = open(SERVER_PID, O_RDONLY);
-    
+
     if(serverpidfd == -1)
     {
         fprintf(stderr, "Server not running!");
@@ -63,16 +64,22 @@ int main(int argc, char** argv)
         exit (EXIT_FAILURE);
     }
     
+    read(serverpidfd, pid, sizeof(char)*6);
+    
+    sscanf(pid, "%d", &server_pid);
+    
+    kill(server_pid, SIGALRM);
+
     ///////////////////////
     ///Iniciar o ncurses///
     ///////////////////////
-    
+
     initscr();              //Inicia a janela principal 'stdscr' do ncurses
     start_color();          //Liga as cores
     noecho();               //Desliga o echo'ing de characteres
     curs_set(0);            //Desliga o piscar do cursor no terminal
     keypad(stdscr, true);   //Liga o keypad
-    
+
     ////////////////////////////////////
     ///Iniciar o tratamento do sinais///
     ////////////////////////////////////

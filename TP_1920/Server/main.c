@@ -20,11 +20,15 @@ int main(int argc, char** argv)
     int maxMessage, maxNot, veriPipe[2], servPipe[2];
     char* wordNot;
     char cmd[CMD_SIZE];
-    struct sigaction cSignal;
+    struct sigaction cSignal, cAlarm;
     
     cSignal.sa_flags = SA_SIGINFO;
     cSignal.sa_sigaction = &clientSignals;
     sigaction(SIGUSR1, &cSignal, NULL);
+    
+    cAlarm.sa_flags = SA_SIGINFO;
+    cAlarm.sa_sigaction = &getClientPid;
+    sigaction(SIGALRM, &cAlarm, NULL);
     
     /* === ENV VARS === */
     if(getenv("MAXMSG") != NULL)

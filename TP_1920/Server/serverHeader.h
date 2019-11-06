@@ -5,6 +5,10 @@
 #define _DEFAULT_SOURCE
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -53,5 +57,9 @@ void listAllMesages();
 void deleteEmptyTopics();
 
 int createServerFiles();
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

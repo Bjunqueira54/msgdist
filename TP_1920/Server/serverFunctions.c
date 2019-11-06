@@ -181,5 +181,13 @@ int createServerFiles()
         return -1;
     }
     
+    pid_t self_pid = getpid();
+    
+    char pid[6];
+    
+    snprintf(pid, sizeof(char)*6, "%d", self_pid);
+    
+    write(server_file, pid, strlen(pid));
+
     return 0;
 }

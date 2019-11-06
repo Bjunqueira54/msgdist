@@ -4,9 +4,9 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-    
+
 #include "clientHeader.h"
-    
+
 #ifdef __cplusplus
 }
 #endif

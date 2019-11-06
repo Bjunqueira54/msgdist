@@ -103,7 +103,12 @@ void serverBroadcastExit(pClient listStart)
     while(aux->next != NULL);
 }
 
-void clientSignals(int sigNum, siginfo_t *info)
+void clientSignals(int sigNum, siginfo_t *info, void* extras)
+{
+    
+}
+
+void getClientPid(int sigNum, siginfo_t *info, void* extras)
 {
     
 }
