@@ -8,7 +8,7 @@ void serverMainOutput(int flag)
             fprintf(stdout, "\nComando: ");
             return;
         case 1: // Server Shutdown
-            fprintf(stdout, "Gestor vai desligar\n");
+            fprintf(stdout, "\nGestor vai desligar\n");
             return;
         case 2: // Invalid Command
             fprintf(stdout, "Comando invalido\n");
@@ -22,6 +22,9 @@ void serverMainOutput(int flag)
             fprintf(stdout, "          topics - Listar topicos\n");
             fprintf(stdout, "topic -t <topic> - Listar mensagens do topico\n");
             fprintf(stdout, "           prune - Eliminar topicos vazios\n");
+            return;
+        case 4:
+            fprintf(stdout, "\nVerificador desligado\n");
             return;
         default:
             fprintf(stderr, "Erro\n");

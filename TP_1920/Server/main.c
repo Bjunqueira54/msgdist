@@ -50,9 +50,15 @@ int main(int argc, char** argv)
         serverMainOutput(0);
         fgets(cmd, CMD_SIZE, stdin);
         serverMainLoop(cmd, clientList);
+        //verifyNewMessage(servPipe, veriPipe);
     }
     
-    serverMainOutput(1);
     
+    deleteServerFiles();
+    kill(childPID, SIGUSR2);
+    
+    serverMainOutput(4);
+    serverMainOutput(1);
+
     return (EXIT_SUCCESS);
 }

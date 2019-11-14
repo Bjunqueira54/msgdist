@@ -128,27 +128,40 @@ bool stringCompare(char *str1, char *str2) //TEM UM BUG
 
 void listAllUsers() 
 {
-    printf("recognized\n");
+    printf("users recognized\n");
 }
 
 void listAllMesages()
 {
-    printf("recognized\n");
+    printf("msg recognized\n");
 }
 
 void listAllTopics()
 {
-    printf("recognized\n");
+    printf("topics recognized\n");
 }
 
 void deleteEmptyTopics() 
 {
-    printf("recognized\n");
+    printf("prune recognized\n");
 }
 
-bool verifyNewMessage() { //recebe sinal do clinte que meteu uma nova mensagem. esta funcao cuida de verificar
+bool verifyNewMessage(int *servPipe, int *veriPipe) { //recebe sinal do cliente que meteu uma nova mensagem. esta funcao cuida de verificar
     //recebe mensagem do pipe
+    char word[20];
     
+    do {
+        printf("\nPalavra: ");
+        scanf("%s", word);
+
+        write(servPipe[1], word, strlen(word));
+        printf("<GESTOR> sent\n");
+        
+    } while(strcmp(word,"##MSGEND##"));
+    
+    printf("<GESTOR> waiting\n");
+    read(veriPipe[0], word, strlen(word));
+    printf("\n%d", atoi(word));
     
 }
 
@@ -190,4 +203,13 @@ int createServerFiles()
     write(server_file, pid, strlen(pid));
 
     return 0;
+}
+
+int deleteServerFiles() 
+{    
+    if (remove(SERVER_PID) != 0) {
+        fprintf(stderr, "Erro ao apagar o ficheiro\n"); 
+        return -1;
+    }
+    return 0; 
 }
