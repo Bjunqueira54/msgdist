@@ -40,10 +40,6 @@ int main(int argc, char** argv)
     if(getenv("WORDNOT") != NULL)
         wordNot = getenv("WORDNOT");
     
-    /* ===================================================== */
-    /* ================ CONFIGURAR O SIGINT ================ */
-    /* ===================================================== */    
-    
     /* === PIPES === */
     pipe(servPipe);
     pipe(veriPipe);
@@ -59,11 +55,10 @@ int main(int argc, char** argv)
         verifyNewMessage(servPipe, veriPipe);
     }
     
-    
+    /* === SERVER SHUTDOWN === */
     deleteServerFiles();
     kill(childPID, SIGUSR2);
-    
-    serverMainOutput(4);
+    serverMainOutput(4); //nao e' necessario
     serverMainOutput(1);
 
     return (EXIT_SUCCESS);

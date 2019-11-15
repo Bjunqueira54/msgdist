@@ -6,15 +6,15 @@ void initializeVerifier(int *servPipe, int *veriPipe)
 {
     childPID = fork();
     if(childPID == 0) {
-        /*close(0);
-        close(1);*/
-        
-        
-        dup2(veriPipe[1], 1);
+        close(1);
+        dup(veriPipe[1]);
         close(veriPipe[1]);
-
-        dup2(servPipe[0],0);
+        close(veriPipe[0]);
+        
+        close(0);
+        dup(servPipe[0]);
         close(servPipe[0]);
+        close(servPipe[1]);
 
         execlp("./verificador", "verificador", BADWORDS, NULL);
 
@@ -156,7 +156,6 @@ void deleteEmptyTopics()
 }
 
 bool verifyNewMessage(int *servPipe, int *veriPipe) { //recebe sinal do cliente que meteu uma nova mensagem. esta funcao cuida de verificar
-    //recebe mensagem do pipe
     char word[20];
     
     do {
@@ -175,15 +174,14 @@ bool verifyNewMessage(int *servPipe, int *veriPipe) { //recebe sinal do cliente 
 }
 
 void terminateServer(int num) {
-    if(num == SIGINT) {
-        deleteServerFiles();
-        kill(childPID, SIGUSR2);
-        fprintf(stderr, "\n\nServidor recebeu SIGINT\n");
-        fprintf(stderr, "\nGestor vai desligar\n");
-        
-        getchar();
-        exit(EXIT_SUCCESS);
-    }
+    fprintf(stderr, "\n\nServidor recebeu SIGINT\n");
+    
+    deleteServerFiles();
+    kill(childPID, SIGUSR2);
+    fprintf(stderr, "\nGestor vai desligar\n");
+
+    getchar();
+    exit(EXIT_SUCCESS);
 }
 
 int createServerFiles()
