@@ -60,6 +60,11 @@ void terminateServer(int num);
 int deleteServerFiles();
 int createServerFiles();
 
+//TEMPORARY, DELETE LATER!
+
+extern int servPipe[2];
+extern int veriPipe[2];
+
 #ifdef __cplusplus
 }
 #endif

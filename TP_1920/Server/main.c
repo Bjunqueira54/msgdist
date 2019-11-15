@@ -4,6 +4,9 @@ bool Exit;
 bool Filter;
 int childPID;
 
+//TEMPORARY, Delete later
+int servPipe[2], veriPipe[2];
+
 //Server
 int main(int argc, char** argv)
 {
@@ -17,7 +20,7 @@ int main(int argc, char** argv)
 
     /* === LOCAL VARIABLES === */
     pClient clientList = NULL;    
-    int maxMessage, maxNot, veriPipe[2], servPipe[2];
+    int maxMessage, maxNot/*, veriPipe[2], servPipe[2]*/;
     char* wordNot;
     char cmd[CMD_SIZE];
     struct sigaction cSignal, cAlarm;
@@ -41,18 +44,19 @@ int main(int argc, char** argv)
         wordNot = getenv("WORDNOT");
     
     /* === PIPES === */
-    pipe(servPipe);
-    pipe(veriPipe);
+    pipe(servPipe); //Server Write
+    pipe(veriPipe); //Server Read
     initializeVerifier(servPipe, veriPipe);
 
     fprintf(stdout, "'help' para ajuda\n");
 
     /* === SERVER MAIN LOOP === */
-    while(!Exit) {
+    while(!Exit)
+    {
         serverMainOutput(0);
         fgets(cmd, CMD_SIZE, stdin);
         serverMainLoop(cmd, clientList);
-        verifyNewMessage(servPipe, veriPipe);
+        //verifyNewMessage(servPipe, veriPipe);
     }
     
     /* === SERVER SHUTDOWN === */

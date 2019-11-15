@@ -5,8 +5,10 @@ int server_file;
 void initializeVerifier(int *servPipe, int *veriPipe)
 {
     childPID = fork();
-    if(childPID == 0) {
-        close(1);
+    
+    if(childPID == 0)   //Child
+    {
+        /*close(1);
         dup(veriPipe[1]);
         close(veriPipe[1]);
         close(veriPipe[0]);
@@ -14,22 +16,40 @@ void initializeVerifier(int *servPipe, int *veriPipe)
         close(0);
         dup(servPipe[0]);
         close(servPipe[0]);
-        close(servPipe[1]);
+        close(servPipe[1]);*/
+        
+        close(servPipe[0]);
+        close(veriPipe[0]);
+        
+        close(STDIN_FILENO);
+        dup(servPipe[1]);
+        close(servPipe[0]);
+        
+        close(STDOUT_FILENO);
+        dup(veriPipe[1]);
+        close(veriPipe[1]);
 
-        execlp("./verificador", "verificador", BADWORDS, NULL);
+        int n = execlp("./verificador", "verificador", BADWORDS, NULL);
 
-        fprintf(stderr, "\nErro! Impossivel executar programa\n");
+        if(n < 0)
+            fprintf(stderr, "\nErro! Impossivel executar programa\n");
+        
         exit(0); 
     }
-    else {
-        close(servPipe[0]);
+    else    //Parent
+    {
+        /*close(servPipe[0]);
+        close(veriPipe[1]);*/
+        
+        close(servPipe[1]);
         close(veriPipe[1]);
     }
 }
 
 void serverMainLoop(char *cmd, pClient aux)
 {
-    if(stringCompare(cmd, "shutdown")) {
+    if(stringCompare(cmd, "shutdown"))
+    {
         union sigval value;
         value.sival_int = 0;
 
@@ -49,34 +69,65 @@ void serverMainLoop(char *cmd, pClient aux)
             serverMainOutput(2);
 }
 
+void SendTestText()
+{
+    printf("Manda mensagem para o verificador (termina com ' '##MSGEND##)\n");
+    printf("Mensagem: ");
+    char teste_mensagem[100];
+    char numhits;
+    fgets(teste_mensagem, 99, stdin);
+    
+    //servPipe[0]; //Para escrever
+    //veriPipe[0]; //Para ler
+    
+    teste_mensagem[strlen(teste_mensagem) - 1] = '\0';
+    
+    write(servPipe[0], teste_mensagem, strlen(teste_mensagem));
+    read(veriPipe[0], &numhits, sizeof(char));
+    
+    printf("\nO Verificador diz: %c\n", numhits);
+}
+
 bool parseCommands(char cmd[])
 {
-    if(stringCompare(cmd, "help")) {
+    if(stringCompare(cmd, "help"))
+    {
         serverMainOutput(3);
         return true;
     }
-    else if (stringCompare(cmd, "msg") ) {
+    else if(stringCompare(cmd, "test"))
+    {
+        SendTestText();
+        return true;
+    }
+    else if (stringCompare(cmd, "msg") )
+    {
         listAllMesages();
         return true;
     }
-    else if (stringCompare(cmd, "users")) {
+    else if (stringCompare(cmd, "users"))
+    {
         listAllUsers();
         return true;        
     }
-    else if (stringCompare(cmd, "topics")) {
+    else if (stringCompare(cmd, "topics"))
+    {
         listAllTopics();
         return true;
     }
-    else if (stringCompare(cmd, "prune")) {
+    else if (stringCompare(cmd, "prune"))
+    {
         deleteEmptyTopics();
         return true;
     }
-    else if (stringCompare(cmd, "filter on")) {
+    else if (stringCompare(cmd, "filter on"))
+    {
         if (Filter == false)
             Filter = true;
         return true;
     }
-    else if (stringCompare(cmd, "filter off")) {
+    else if (stringCompare(cmd, "filter off"))
+    {
         if (Filter == true)
             Filter = false;
         return true;
