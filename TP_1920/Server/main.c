@@ -22,6 +22,8 @@ int main(int argc, char** argv)
     char cmd[CMD_SIZE];
     struct sigaction cSignal, cAlarm;
     
+    signal(SIGINT, terminateServer);
+    
     cSignal.sa_flags = SA_SIGINFO;
     cSignal.sa_sigaction = &clientSignals;
     sigaction(SIGUSR1, &cSignal, NULL);
@@ -38,6 +40,10 @@ int main(int argc, char** argv)
     if(getenv("WORDNOT") != NULL)
         wordNot = getenv("WORDNOT");
     
+    /* ===================================================== */
+    /* ================ CONFIGURAR O SIGINT ================ */
+    /* ===================================================== */    
+    
     /* === PIPES === */
     pipe(servPipe);
     pipe(veriPipe);
@@ -50,7 +56,7 @@ int main(int argc, char** argv)
         serverMainOutput(0);
         fgets(cmd, CMD_SIZE, stdin);
         serverMainLoop(cmd, clientList);
-        //verifyNewMessage(servPipe, veriPipe);
+        verifyNewMessage(servPipe, veriPipe);
     }
     
     

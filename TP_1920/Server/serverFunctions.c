@@ -6,8 +6,13 @@ void initializeVerifier(int *servPipe, int *veriPipe)
 {
     childPID = fork();
     if(childPID == 0) {
+        /*close(0);
+        close(1);*/
+        
+        
         dup2(veriPipe[1], 1);
         close(veriPipe[1]);
+
         dup2(servPipe[0],0);
         close(servPipe[0]);
 
@@ -15,6 +20,10 @@ void initializeVerifier(int *servPipe, int *veriPipe)
 
         fprintf(stderr, "\nErro! Impossivel executar programa\n");
         exit(0); 
+    }
+    else {
+        close(servPipe[0]);
+        close(veriPipe[1]);
     }
 }
 
@@ -155,14 +164,26 @@ bool verifyNewMessage(int *servPipe, int *veriPipe) { //recebe sinal do cliente 
         scanf("%s", word);
 
         write(servPipe[1], word, strlen(word));
-        printf("<GESTOR> sent\n");
+        printf("sent\n");
         
-    } while(strcmp(word,"##MSGEND##"));
+    } while(strcmp(word,"##MSGEND##") != 0);
     
-    printf("<GESTOR> waiting\n");
-    read(veriPipe[0], word, strlen(word));
+    printf("waiting\n");
+    int nbytes = read(veriPipe[0], word, strlen(word));
     printf("\n%d", atoi(word));
     
+}
+
+void terminateServer(int num) {
+    if(num == SIGINT) {
+        deleteServerFiles();
+        kill(childPID, SIGUSR2);
+        fprintf(stderr, "\n\nServidor recebeu SIGINT\n");
+        fprintf(stderr, "\nGestor vai desligar\n");
+        
+        getchar();
+        exit(EXIT_SUCCESS);
+    }
 }
 
 int createServerFiles()

@@ -56,6 +56,8 @@ void listAllUsers();
 void listAllMesages();
 void deleteEmptyTopics();
 
+void terminateServer(int num);
+int deleteServerFiles();
 int createServerFiles();
 
 #ifdef __cplusplus
