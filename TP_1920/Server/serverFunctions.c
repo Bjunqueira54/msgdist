@@ -2,237 +2,234 @@
 
 int server_file;
 
-void initializeVerifier(int *servPipe, int *veriPipe)
+void killAllClients();
+
+void initializeVerifier(int *parent_to_child, int *child_to_parent)
 {
-    childPID = fork();
+    pipe(parent_to_child); //Server-to-Child pipe (Server write)
+    pipe(child_to_parent); //Child-to-Server (Server Read)
+
+    pid_t child_pid = fork();
     
-    if(childPID == 0)   //Child
+    if(child_pid == 0)  //Child
     {
-        /*close(1);
-        dup(veriPipe[1]);
-        close(veriPipe[1]);
-        close(veriPipe[0]);
-        
-        close(0);
-        dup(servPipe[0]);
-        close(servPipe[0]);
-        close(servPipe[1]);*/
-        
-        close(servPipe[0]);
-        close(veriPipe[0]);
+        close(child_to_parent[0]);
+        close(parent_to_child[1]);
         
         close(STDIN_FILENO);
-        dup(servPipe[1]);
-        close(servPipe[0]);
+        dup(parent_to_child[0]);
+        close(parent_to_child[0]);
         
         close(STDOUT_FILENO);
-        dup(veriPipe[1]);
-        close(veriPipe[1]);
-
-        int n = execlp("./verificador", "verificador", BADWORDS, NULL);
-
-        if(n < 0)
-            fprintf(stderr, "\nErro! Impossivel executar programa\n");
+        dup(child_to_parent[1]);
+        close(child_to_parent[1]);
         
-        exit(0); 
+        if(execlp("./verificador", "verificador", BADWORDS, (char *) NULL) == -1)
+            fprintf(stderr, "Error starting the verifier!\n");
     }
     else    //Parent
     {
-        /*close(servPipe[0]);
-        close(veriPipe[1]);*/
-        
-        close(servPipe[1]);
-        close(veriPipe[1]);
+        close(child_to_parent[1]);
+        close(parent_to_child[0]);
     }
 }
 
-void serverMainLoop(char *cmd, pClient aux)
+void serverMainLoop(char *cmd)
 {
-    if(stringCompare(cmd, "shutdown"))
+    char **parsedCmd = stringParser(cmd);
+    
+    if(parsedCmd == NULL)
+        return;
+    
+    if(strcmp(parsedCmd[0], "shutdown") == 0)
     {
-        union sigval value;
-        value.sival_int = 0;
-
-        while(aux != NULL)
-        {
-            sigqueue(aux->c_PID, SIGINT, value);
-            aux = aux->next;
-        }
+        killAllClients();
 
         Exit = true;
         return;
     }
-    else
-        if (parseCommands(cmd))
-            return;
-        else
-            serverMainOutput(2);
-}
-
-void SendTestText()
-{
-    printf("Manda mensagem para o verificador (termina com ' '##MSGEND##)\n");
-    printf("Mensagem: ");
-    char teste_mensagem[100];
-    char numhits;
-    fgets(teste_mensagem, 99, stdin);
-    
-    //servPipe[0]; //Para escrever
-    //veriPipe[0]; //Para ler
-    
-    teste_mensagem[strlen(teste_mensagem) - 1] = '\0';
-    
-    write(servPipe[0], teste_mensagem, strlen(teste_mensagem));
-    read(veriPipe[0], &numhits, sizeof(char));
-    
-    printf("\nO Verificador diz: %c\n", numhits);
-}
-
-bool parseCommands(char cmd[])
-{
-    if(stringCompare(cmd, "help"))
+    else if(strcmp(parsedCmd[0], "help") == 0)
     {
         serverMainOutput(3);
-        return true;
     }
-    else if(stringCompare(cmd, "test"))
-    {
-        SendTestText();
-        return true;
-    }
-    else if (stringCompare(cmd, "msg") )
-    {
-        listAllMesages();
-        return true;
-    }
-    else if (stringCompare(cmd, "users"))
+    else if(strcmp(parsedCmd[0], "users") == 0)
     {
         listAllUsers();
-        return true;        
     }
-    else if (stringCompare(cmd, "topics"))
+    else if(strcmp(parsedCmd[0], "msg") == 0)
+    {
+        listAllMesages();
+    }
+    else if(strcmp(parsedCmd[0], "topics") == 0)
     {
         listAllTopics();
-        return true;
     }
-    else if (stringCompare(cmd, "prune"))
+    else if(strcmp(parsedCmd[0], "prune") == 0)
     {
         deleteEmptyTopics();
-        return true;
     }
-    else if (stringCompare(cmd, "filter on"))
+    else if(strcmp(parsedCmd[0], "filter") == 0)
     {
-        if (Filter == false)
+        if(strcmp(parsedCmd[1], "on") == 0)
             Filter = true;
-        return true;
-    }
-    else if (stringCompare(cmd, "filter off"))
-    {
-        if (Filter == true)
+        else if(strcmp(parsedCmd[1], "off") == 0)
             Filter = false;
-        return true;
+        else
+            printf("Filter option not recognized\n");
+    }
+}
+
+char** stringParser(const char* string)
+{
+    if(string == NULL)
+        return NULL;
+    
+    int spaces = 0;
+    int maxWordSize = 0;
+    int currentWordSize = 0;
+    
+    for(int i = 0; true; i++)
+    {
+        if(string[i] == ' ')
+        {
+            spaces++;
+            
+            if(currentWordSize >= maxWordSize)
+            {
+                maxWordSize = currentWordSize;
+                currentWordSize = 0;
+            }
+            continue;
+        }
+        else if(string[i] == '\0')
+        {
+            if(currentWordSize >= maxWordSize)
+            {
+                maxWordSize = currentWordSize;
+                currentWordSize = 0;
+            }
+            
+            break;
+        }
+        
+        currentWordSize++;
+    }
+    
+    int arraySize = spaces + 2; //words = spaces + 1 (+ 1 for NULL)
+    
+    char** parsedStrings = calloc(arraySize, sizeof(char*));
+    
+    if(parsedStrings == NULL)
+        return NULL;
+    
+    for(int i = 0; i < arraySize; i++)
+    {
+        parsedStrings[i] = calloc(maxWordSize, sizeof(char));
+        
+        if(parsedStrings[i] == NULL)
+        {
+            printf("Allocation Error!\n");
+            
+            for(int j = 0; j < i; j++)
+                free(parsedStrings[j]);
+            
+            return NULL;
+        }
+    }
+    
+    if(arraySize == 2) //Only 1 word + NULL
+    {
+        for(int i = 0; string[i] != '\0'; i++)
+        {
+            parsedStrings[0][i] = string[i];
+        }
+        
+        parsedStrings[1] = NULL;
+    }
+    else if(arraySize < 2) //something went HORRIBLY WRONG!
+    {
+        return NULL;
     }
     else
-        if(parseOptionCommands(cmd))
-            return true;
+    {
+        int i = 0;
         
-    return false;
-}
+        for(int y = 0; true; y++)
+        {
+            for(int x = 0; true; x++)
+            {
+                if(string[i] == ' ' || string[i] == '\0')
+                {
+                    parsedStrings[y][x] = '\0';
+                    break;
+                }
+                else
+                {
+                    parsedStrings[y][x] = string[i];
+                }
+                
+                i++;
+            }
 
-bool parseOptionCommands(char cmd[])
-{
-    int i = 0;
-    char *options[2], *opt = strtok(cmd, " ");
-    
-    while(opt != NULL) {
-        options[i++] = opt;
-        opt = strtok(NULL, " ");
+            if(string[i] == '\0')
+                break;
+            
+            i++;
+        }        
     }
     
-    switch(getopt(i, options, "m:t:u:")) {
-        case 'm':
-            if(stringCompare(options[0],"del")) {
-                opt = optarg; //nome
-                return true;
-            }
-            return false;
-        case 't':
-            if(stringCompare(options[0],"topic")) {
-                opt = optarg; //nome
-                return true;
-            }
-            return false;
-        case 'u':
-            if(stringCompare(options[0],"kick")) {
-                opt = optarg; //nome
-                return true;
-            }
-            return false;
-        default:
-            return false;
-    }
-
-    return false;
-}
-
-bool stringCompare(char *str1, char *str2) //TEM UM BUG
-{
-    if(strlen(str1) <= 1)
-        return false;
-        
-    for (int i = 0; i < strlen(str1) - 1; i++)
-        if(str1[i] != str2[i])
-            return false;
-    return true;
+    parsedStrings[arraySize - 1] = NULL;
+    
+    return parsedStrings;
 }
 
 void listAllUsers() 
 {
-    printf("users recognized\n");
+    printf("Currently Connected Users: \n");
 }
 
 void listAllMesages()
 {
-    printf("msg recognized\n");
+    printf("All Messages on the server: \n");
 }
 
 void listAllTopics()
 {
-    printf("topics recognized\n");
+    printf("Current Topics:\n");
 }
 
 void deleteEmptyTopics() 
 {
-    printf("prune recognized\n");
+    printf("Deleting all empty topics from the server.\n");
 }
 
-bool verifyNewMessage(int *servPipe, int *veriPipe) { //recebe sinal do cliente que meteu uma nova mensagem. esta funcao cuida de verificar
-    char word[20];
-    
-    do {
-        printf("\nPalavra: ");
-        scanf("%s", word);
-
-        write(servPipe[1], word, strlen(word));
-        printf("sent\n");
-        
-    } while(strcmp(word,"##MSGEND##") != 0);
-    
-    printf("waiting\n");
-    int nbytes = read(veriPipe[0], word, strlen(word));
-    printf("\n%d", atoi(word));
-    
-}
-
-void terminateServer(int num) {
+void terminateServer(int num)
+{
     fprintf(stderr, "\n\nServidor recebeu SIGINT\n");
     
     deleteServerFiles();
     kill(childPID, SIGUSR2);
     fprintf(stderr, "\nGestor vai desligar\n");
+    
+    printf("Signalling all clients...\n");
+    killAllClients();
 
     getchar();
     exit(EXIT_SUCCESS);
+}
+
+void killAllClients()
+{
+    union sigval value;
+    value.sival_int = 0;
+    
+    pClient aux = clientList;
+
+    while(aux != NULL)
+    {
+        sigqueue(aux->c_PID, SIGINT, value);
+        aux = aux->next;
+    }
 }
 
 int createServerFiles()
@@ -277,9 +274,11 @@ int createServerFiles()
 
 int deleteServerFiles() 
 {    
-    if (remove(SERVER_PID) != 0) {
+    if (remove(SERVER_PID) != 0)
+    {
         fprintf(stderr, "Erro ao apagar o ficheiro\n"); 
         return -1;
     }
+    
     return 0; 
 }

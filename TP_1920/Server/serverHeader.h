@@ -43,10 +43,11 @@ extern int childPID;
 extern int server_file;
 extern bool Exit;
 extern bool Filter;
+extern pClient clientList;
 
-void initializeVerifier(int* servPipe, int *veriPipe);    
-void serverMainLoop(char *cmd, pClient aux);
-bool stringCompare(char *str1, char *str2);
+void initializeVerifier(int*, int *);    
+void serverMainLoop(char*);
+bool stringCompare(char *, char *);
 
 bool parseCommands(char cmd[]);
 bool parseOptionCommands(char cmd[]);
@@ -56,14 +57,19 @@ void listAllUsers();
 void listAllMesages();
 void deleteEmptyTopics();
 
-void terminateServer(int num);
+void terminateServer(int);
 int deleteServerFiles();
 int createServerFiles();
 
-//TEMPORARY, DELETE LATER!
-
-extern int servPipe[2];
-extern int veriPipe[2];
+/*Custom made string parser.\n
+ * Usage: Takes *string* (Null-Terminated) as an argument and\n
+ * attempts to break it down into all of it's words.
+ * SPACE is the only accepted delimiter. Any other symbols
+ * will be counted towards the total number of words.\n
+ * Returns: 2-dimension array with words+1 lines
+ * and each line is occupied by a Null-terminated
+ * word of *string*.*/
+char** stringParser(const char* string);
 
 #ifdef __cplusplus
 }
