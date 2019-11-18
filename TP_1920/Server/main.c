@@ -3,6 +3,22 @@
 bool Exit;
 bool Filter;
 int childPID;
+pClient clientList;
+
+void terminateServer(int num)
+{
+    fprintf(stderr, "\n\nServidor recebeu SIGINT\n");
+    
+    deleteServerFiles();
+    kill(childPID, SIGUSR2);
+    fprintf(stderr, "\nGestor vai desligar\n");
+    
+    printf("Signalling all clients...\n");
+    killAllClients(clientList);
+
+    getchar();
+    exit (EXIT_SUCCESS);
+}
 
 pClient addTestClient(pClient clientList)
 {
@@ -90,24 +106,19 @@ int main(int argc, char** argv)
     Exit = false;
     Filter = true;
     childPID = 1;
+    clientList = NULL;
        
     /* ======================== */
 
     /* === LOCAL VARIABLES === */
-    pClient clientList = NULL;
     int maxMessage, maxNot;
     char* wordNot;
     char cmd[CMD_SIZE];
-    struct sigaction cSignal, cAlarm, cSigInt;
+    struct sigaction cSignal, cAlarm;
     /* ======================= */
     
     /* === SIGNAL HANDLING=== */
-    //signal(SIGINT, terminateServer);
-    cSigInt.sa_flags = SA_SIGINFO;
-    cSigInt.sa_sigaction = &terminateServer;
-    siginfo_t sigint_info;
-    sigint_info._sifields._rt.si_sigval.sival_ptr = clientList;
-    sigaction(SIGINT, &cSigInt, NULL);
+    signal(SIGINT, terminateServer);
     
     cSignal.sa_flags = SA_SIGINFO;
     cSignal.sa_sigaction = &clientSignals;

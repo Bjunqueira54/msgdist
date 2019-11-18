@@ -58,7 +58,6 @@ void listAllMesages();
 void deleteEmptyTopics();
 void killAllClients(pClient);
 
-void terminateServer(int, siginfo_t*, void*);
 int deleteServerFiles();
 int createServerFiles();
 

@@ -32,52 +32,6 @@ void initializeVerifier(int *parent_to_child, int *child_to_parent)
     }
 }
 
-//Stays here for now, but delete later!
-/*void serverMainLoop(char *cmd)
-{
-    char **parsedCmd = stringParser(cmd);
-    
-    if(parsedCmd == NULL)
-        return;
-    
-    if(strcmp(parsedCmd[0], "shutdown") == 0)
-    {
-        killAllClients();
-
-        Exit = true;
-        return;
-    }
-    else if(strcmp(parsedCmd[0], "help") == 0)
-    {
-        serverMainOutput(3);
-    }
-    else if(strcmp(parsedCmd[0], "users") == 0)
-    {
-        listAllUsers();
-    }
-    else if(strcmp(parsedCmd[0], "msg") == 0)
-    {
-        listAllMesages();
-    }
-    else if(strcmp(parsedCmd[0], "topics") == 0)
-    {
-        listAllTopics();
-    }
-    else if(strcmp(parsedCmd[0], "prune") == 0)
-    {
-        deleteEmptyTopics();
-    }
-    else if(strcmp(parsedCmd[0], "filter") == 0)
-    {
-        if(strcmp(parsedCmd[1], "on") == 0)
-            Filter = true;
-        else if(strcmp(parsedCmd[1], "off") == 0)
-            Filter = false;
-        else
-            printf("Filter option not recognized\n");
-    }
-}*/
-
 char** stringParser(const char* string)
 {
     if(string == NULL)
@@ -214,21 +168,6 @@ void deleteEmptyTopics()
     printf("Deleting all empty topics from the server.\n");
 }
 
-void terminateServer(int num, siginfo_t* info, void* extra)
-{
-    fprintf(stderr, "\n\nServidor recebeu SIGINT\n");
-    
-    deleteServerFiles();
-    kill(childPID, SIGUSR2);
-    fprintf(stderr, "\nGestor vai desligar\n");
-    
-    printf("Signalling all clients...\n");
-    killAllClients((pClient) info->_sifields._rt.si_sigval.sival_ptr);
-
-    getchar();
-    exit (EXIT_SUCCESS);
-}
-
 void killAllClients(pClient clientList)
 {
     union sigval value;
@@ -290,6 +229,8 @@ int deleteServerFiles()
         fprintf(stderr, "Erro ao apagar o ficheiro\n"); 
         return -1;
     }
+    
+    system("rmdir /tmp/msgdist");
     
     return 0; 
 }
