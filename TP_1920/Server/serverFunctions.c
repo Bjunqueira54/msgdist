@@ -2,8 +2,6 @@
 
 int server_file;
 
-void killAllClients();
-
 void initializeVerifier(int *parent_to_child, int *child_to_parent)
 {
     pipe(parent_to_child); //Server-to-Child pipe (Server write)
@@ -34,7 +32,8 @@ void initializeVerifier(int *parent_to_child, int *child_to_parent)
     }
 }
 
-void serverMainLoop(char *cmd)
+//Stays here for now, but delete later!
+/*void serverMainLoop(char *cmd)
 {
     char **parsedCmd = stringParser(cmd);
     
@@ -77,7 +76,7 @@ void serverMainLoop(char *cmd)
         else
             printf("Filter option not recognized\n");
     }
-}
+}*/
 
 char** stringParser(const char* string)
 {
@@ -183,9 +182,21 @@ char** stringParser(const char* string)
     return parsedStrings;
 }
 
-void listAllUsers() 
+void listAllUsers(pClient clientList)
 {
+    if(clientList == NULL)
+        return;
+    
     printf("Currently Connected Users: \n");
+    
+    pClient aux = clientList;
+    
+    do
+    {
+        printf("%d\n", aux->c_PID);
+        aux = aux->next;
+    }
+    while(aux != NULL);
 }
 
 void listAllMesages()
@@ -203,7 +214,7 @@ void deleteEmptyTopics()
     printf("Deleting all empty topics from the server.\n");
 }
 
-void terminateServer(int num)
+void terminateServer(int num, siginfo_t* info, void* extra)
 {
     fprintf(stderr, "\n\nServidor recebeu SIGINT\n");
     
@@ -212,13 +223,13 @@ void terminateServer(int num)
     fprintf(stderr, "\nGestor vai desligar\n");
     
     printf("Signalling all clients...\n");
-    killAllClients();
+    killAllClients((pClient) info->_sifields._rt.si_sigval.sival_ptr);
 
     getchar();
-    exit(EXIT_SUCCESS);
+    exit (EXIT_SUCCESS);
 }
 
-void killAllClients()
+void killAllClients(pClient clientList)
 {
     union sigval value;
     value.sival_int = 0;

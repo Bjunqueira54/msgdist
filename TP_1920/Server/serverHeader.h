@@ -43,7 +43,7 @@ extern int childPID;
 extern int server_file;
 extern bool Exit;
 extern bool Filter;
-extern pClient clientList;
+//extern pClient clientList;
 
 void initializeVerifier(int*, int *);    
 void serverMainLoop(char*);
@@ -53,11 +53,12 @@ bool parseCommands(char cmd[]);
 bool parseOptionCommands(char cmd[]);
 
 void listAllTopics();
-void listAllUsers();
+void listAllUsers(pClient);
 void listAllMesages();
 void deleteEmptyTopics();
+void killAllClients(pClient);
 
-void terminateServer(int);
+void terminateServer(int, siginfo_t*, void*);
 int deleteServerFiles();
 int createServerFiles();
 
