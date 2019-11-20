@@ -1,3 +1,5 @@
+#include <sys/stat.h>
+
 #include "clientHeader.h"
 
 bool Exit;
@@ -41,7 +43,7 @@ int main(int argc, char** argv)
     ////////////////////////////////
 
     pid_t server_pid;
-    pid_t self_pid;
+    pid_t self_pid = getpid();
 
     pthread_t notification_thread;
     Exit = false;
@@ -49,7 +51,12 @@ int main(int argc, char** argv)
 
     int current_topic_id = 0;
     int serverpidfd;
+    int self_pipe_fd;
+    int server_pipe_fd;
+    
     char pid[6];
+    char self_pipe_path[50];
+    char server_pipe_path[50];
 
     ///////////
     ///Pipes///
@@ -67,8 +74,27 @@ int main(int argc, char** argv)
     read(serverpidfd, pid, sizeof(char)*6);
     
     sscanf(pid, "%d", &server_pid);
+
+    if(server_pid == 0)
+    {
+        fprintf(stderr, "Something went wrong reading the server PID\n");
+        exit (EXIT_FAILURE);
+    }
+    
+    /*memset(self_pipe_path, 0, 50);
+    snprintf(self_pipe_path, 50, "%s/client_%d_r\0", MSGDIST_DIR, self_pid);
+    
+    printf("Your pipe will be created in: %s\n", self_pipe_path);
+    printf("(press enter to continue...)");
+    getchar();
+    
+    mkfifo(self_pipe_path, S_IRUSR | S_IWUSR);
+    self_pipe_fd = open(self_pipe_path, O_RDONLY);
     
     kill(server_pid, SIGALRM);
+    
+    snprintf(server_pipe_path, 50, "%s/client_%d_w\n", MSGDIST_DIR, self_pid);
+    server_pipe_fd = open(server_pipe_path, O_WRONLY);*/
 
     ///////////////////////
     ///Iniciar o ncurses///
