@@ -3,30 +3,12 @@
 bool Exit;
 bool Filter;
 int childPID;
+
+//This is global, but only accessible within main.c
 pClient clientList;
 
-void showEnvVars()
-{
-	char _MAXMSG = getenv("MAXMSG");
-	char _MAXNOT = getenv("MAXNOT");
-	char _WORDSNOT = getenv("WORDSNOT");
-
-	if(_MAXMSG == (char*) NULL)
-		printf("MAXMSG: N/A\n");
-	else
-		printf("MAXMSG: %s\n", (char*) _MAXMSG);
-
-	if(_MAXNOT == (char*) NULL)
-		printf("MAXNOT: N/A\n");
-	else
-		printf("MAXNOT: %s\n", (char*) _MAXNOT);
-
-	if(_WORDSNOT == (char*) NULL)
-		printf("WORDSNOT: N/A\n");
-	else
-		printf("WORDSNOT: %s\n", (char*) _WORDSNOT);
-}
-
+//This sig handling functions needs to be here to
+//access the main.c only global clientList.
 void terminateServer(int num)
 {
     fprintf(stderr, "\n\nServidor recebeu SIGINT\n");
@@ -40,82 +22,6 @@ void terminateServer(int num)
 
     getchar();
     exit (EXIT_SUCCESS);
-}
-
-pClient addTestClient(pClient clientList)
-{
-    pClient newClient = calloc(1, sizeof(Client));
-    
-    printf("Enter client PID: ");
-    char s_pid[10];
-    fgets(s_pid, 10, stdin);
-    
-    s_pid[strlen(s_pid) - 1] = '\0';
-    pid_t c_pid;
-    
-    sscanf(s_pid, "%d", &c_pid);
-    
-    newClient->c_PID = c_pid;
-    newClient->c_pipe = 0;
-    //newClient->c_thread = NULL;
-    newClient->next = NULL;
-    newClient->prev = NULL;
-    //newClient->username = NULL;
-    
-    if(clientList == NULL)
-        clientList = newClient;
-    else
-    {
-        pClient aux = clientList;
-        
-        if(aux->next == NULL)
-        {
-            aux->next = newClient;
-        }
-        else
-        {
-            while(aux->next != NULL)
-                aux = aux->next;
-
-            aux->next = newClient;
-        }
-    }
-}
-
-void testVerifier(int parent_write_pipe, int parent_read_pipe)
-{
-    system("clear");
-    
-    printf("Write a message to send to the verifier (no need to write ##MSGEND##)\n");
-    printf("Message: ");
-    
-    char test_message[1000];
-    
-    fgets(test_message, (1000 - 12), stdin); //1000 - 12 because I need to strcat " ##MSGEND##\n" to it
-    
-    test_message[strlen(test_message) - 1] = '\0';
-    
-    strncat(test_message, " ##MSGEND##\n", sizeof(char) * 12);
-    
-    write(parent_write_pipe, test_message, strlen(test_message));
-    
-    char verifier_response[5];
-    char verifier_char;
-    int i = 0;
-    
-    while(read(parent_read_pipe, &verifier_char, sizeof(char)) != 0)
-    {
-        verifier_response[i] = verifier_char;
-        
-        if(verifier_char == '\n')
-            break;
-        
-        i++;
-    }
-    
-    verifier_response[i] = '\0';
-    
-    printf("Number of wrong words: %s", verifier_response);
 }
 
 //Server
@@ -152,18 +58,22 @@ int main(int argc, char** argv)
     /* ====================== */
     
     /* === ENV VARS === */
-    if(getenv("MAXMSG") != NULL)
+    /*if(getenv("MAXMSG") != NULL)
         sscanf(getenv("MAXMSG"), "%d", &maxMessage);
     if(getenv("MAXNOT") != NULL)
         sscanf(getenv("MAXNOT"), "%d", &maxNot);
     if(getenv("WORDNOT") != NULL)
-        wordsNot = getenv("WORDSNOT");
+        wordsNot = getenv("WORDSNOT");*/
+    
+    getenv("MAXMSG") == NULL ? maxMessage = MAXMSG_DEFAULT : sscanf(getenv("MAXMSG"), "%d", &maxMessage);
+    getenv("MAXNOT") == NULL ? maxNot = MAXNOT_DEFAULT : sscanf(getenv("MAXNOT"), "%d", &maxNot);
+    wordsNot = getenv("WORDSNOT") == NULL ? WORDSNOT_DEFAULT : getenv("WORDSNOT");
     /* ================ */
     
     /* === PIPES === */
     int parent_read_pipe[2], parent_write_pipe[2];
     
-    initializeVerifier(parent_write_pipe, parent_read_pipe);
+    initializeVerifier(parent_write_pipe, parent_read_pipe, wordsNot);
     /* ============= */
 
     /* === SERVER MAIN LOOP === */
@@ -224,10 +134,10 @@ int main(int argc, char** argv)
         {
             testVerifier(parent_write_pipe[1], parent_read_pipe[0]);
         }
-		else if(strcmp(parsedCmd[0], "envvars") == 0)
-		{
-			showEnvVars();
-		}
+        else if(strcmp(parsedCmd[0], "envvars") == 0)
+        {
+                showEnvVars();
+        }
         else
             serverMainOutput(2);
     }

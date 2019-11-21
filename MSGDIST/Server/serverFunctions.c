@@ -2,7 +2,7 @@
 
 int server_file;
 
-void initializeVerifier(int *parent_to_child, int *child_to_parent)
+void initializeVerifier(int *parent_to_child, int *child_to_parent, char* badwords)
 {
     pipe(parent_to_child); //Server-to-Child pipe (Server write)
     pipe(child_to_parent); //Child-to-Server (Server Read)
@@ -22,7 +22,7 @@ void initializeVerifier(int *parent_to_child, int *child_to_parent)
         dup(child_to_parent[1]);
         close(child_to_parent[1]);
         
-        if(execlp("./verificador", "verificador", BADWORDS, (char *) NULL) == -1)
+        if(execlp("./verificador", "verificador", badwords, (char *) NULL) == -1)
             fprintf(stderr, "Error starting the verifier!\n");
     }
     else    //Parent
@@ -166,6 +166,89 @@ void listAllTopics()
 void deleteEmptyTopics() 
 {
     printf("Deleting all empty topics from the server.\n");
+}
+
+void showEnvVars()
+{
+    getenv("MAXMSG") == NULL ? printf("MAXMSG: N/A\n") : printf("MAXMSG: %s\n", getenv("MAXMSG"));
+    getenv("MAXNOT") == NULL ? printf("MAXNOT: N/A\n") : printf("MAXNOT: %s\n", getenv("MAXNOT"));
+    getenv("WORDSNOT") == NULL ? printf("WORDSNOT: N/A\n") : printf("WORDSNOT: %s\n", getenv("WORDSNOT"));
+}
+
+void testVerifier(int parent_write_pipe, int parent_read_pipe)
+{
+    system("clear");
+    
+    printf("Write a message to send to the verifier (no need to write ##MSGEND##)\n");
+    printf("Message: ");
+    
+    char test_message[1000];
+    
+    fgets(test_message, (1000 - 12), stdin); //1000 - 12 because I need to strcat " ##MSGEND##\n" to it
+    
+    test_message[strlen(test_message) - 1] = '\0';
+    
+    strncat(test_message, " ##MSGEND##\n", sizeof(char) * 12);
+    
+    write(parent_write_pipe, test_message, strlen(test_message));
+    
+    char verifier_response[5];
+    char verifier_char;
+    int i = 0;
+    
+    while(read(parent_read_pipe, &verifier_char, sizeof(char)) != 0)
+    {
+        verifier_response[i] = verifier_char;
+        
+        if(verifier_char == '\n')
+            break;
+        
+        i++;
+    }
+    
+    verifier_response[i] = '\0';
+    
+    printf("Number of wrong words: %s", verifier_response);
+}
+
+pClient addTestClient(pClient clientList)
+{
+    pClient newClient = calloc(1, sizeof(Client));
+    
+    printf("Enter client PID: ");
+    char s_pid[10];
+    fgets(s_pid, 10, stdin);
+    
+    s_pid[strlen(s_pid) - 1] = '\0';
+    pid_t c_pid;
+    
+    sscanf(s_pid, "%d", &c_pid);
+    
+    newClient->c_PID = c_pid;
+    newClient->c_pipe = 0;
+    //newClient->c_thread = NULL;
+    newClient->next = NULL;
+    newClient->prev = NULL;
+    //newClient->username = NULL;
+    
+    if(clientList == NULL)
+        clientList = newClient;
+    else
+    {
+        pClient aux = clientList;
+        
+        if(aux->next == NULL)
+        {
+            aux->next = newClient;
+        }
+        else
+        {
+            while(aux->next != NULL)
+                aux = aux->next;
+
+            aux->next = newClient;
+        }
+    }
 }
 
 void killAllClients(pClient clientList)

@@ -36,7 +36,9 @@ typedef struct client Client, *pClient;
 #include "client.h"
 #include "serverInterface.h"
 
-#define BADWORDS "badwords.txt"
+#define MAXMSG_DEFAULT 25
+#define MAXNOT_DEFAULT 3
+#define WORDSNOT_DEFAULT "badwords.txt"
 
 extern int maxMessages;
 extern int childPID;
@@ -45,7 +47,7 @@ extern bool Exit;
 extern bool Filter;
 //extern pClient clientList;
 
-void initializeVerifier(int*, int *);    
+void initializeVerifier(int*, int *, char*);    
 void serverMainLoop(char*);
 bool stringCompare(char *, char *);
 
@@ -55,6 +57,9 @@ bool parseOptionCommands(char cmd[]);
 void listAllTopics();
 void listAllUsers(pClient);
 void listAllMesages();
+void showEnvVars();
+void testVerifier(int, int);
+pClient addTestClient(pClient);
 void deleteEmptyTopics();
 void killAllClients(pClient);
 
