@@ -2,38 +2,35 @@
 
 int server_file;
 
-void initializeVerifier(int *parent_to_child, int *child_to_parent)
-{
-    pipe(parent_to_child); //Server-to-Child pipe (Server write)
-    pipe(child_to_parent); //Child-to-Server (Server Read)
+void initializeVerifier(int *parent_to_child, int *child_to_parent) {
+    pipe(parent_to_child); // Server-to-Child pipe (Server write)
+    pipe(child_to_parent); // Child-to-Server (Server Read)
 
     pid_t child_pid = fork();
     
-    if(child_pid == 0)  //Child
-    {
+    if(child_pid == 0) { // Child
+        /* Fechar estremidades nao usadas */
         close(child_to_parent[0]);
         close(parent_to_child[1]);
         
-        close(STDIN_FILENO);
+        close(STDIN_FILENO); // 0
         dup(parent_to_child[0]);
         close(parent_to_child[0]);
         
-        close(STDOUT_FILENO);
+        close(STDOUT_FILENO); // 1
         dup(child_to_parent[1]);
         close(child_to_parent[1]);
         
         if(execlp("./verificador", "verificador", BADWORDS, (char *) NULL) == -1)
             fprintf(stderr, "Error starting the verifier!\n");
     }
-    else    //Parent
-    {
+    else { // Parent
         close(child_to_parent[1]);
         close(parent_to_child[0]);
     }
 }
 
-char** stringParser(const char* string)
-{
+char** stringParser(const char* string) {
     if(string == NULL)
         return NULL;
     
@@ -41,30 +38,24 @@ char** stringParser(const char* string)
     int maxWordSize = 0;
     int currentWordSize = 0;
     
-    for(int i = 0; true; i++)
-    {
-        if(string[i] == ' ')
-        {
+    for(int i = 0; true; i++) {
+        if(string[i] == ' ') {
             spaces++;
             
-            if(currentWordSize >= maxWordSize)
-            {
+            if(currentWordSize >= maxWordSize) {
                 maxWordSize = currentWordSize;
                 currentWordSize = 0;
             }
             continue;
         }
-        else if(string[i] == '\0')
-        {
-            if(currentWordSize >= maxWordSize)
-            {
+        else if(string[i] == '\0') {
+            if(currentWordSize >= maxWordSize) {
                 maxWordSize = currentWordSize;
                 currentWordSize = 0;
             }
             
             break;
-        }
-        
+        }  
         currentWordSize++;
     }
     
@@ -75,12 +66,10 @@ char** stringParser(const char* string)
     if(parsedStrings == NULL)
         return NULL;
     
-    for(int i = 0; i < arraySize; i++)
-    {
+    for(int i = 0; i < arraySize; i++) {
         parsedStrings[i] = calloc(maxWordSize, sizeof(char));
         
-        if(parsedStrings[i] == NULL)
-        {
+        if(parsedStrings[i] == NULL) {
             printf("Allocation Error!\n");
             
             for(int j = 0; j < i; j++)
@@ -90,8 +79,7 @@ char** stringParser(const char* string)
         }
     }
     
-    if(arraySize == 2) //Only 1 word + NULL
-    {
+    if(arraySize == 2) { //Only 1 word + NULL 
         for(int i = 0; string[i] != '\0'; i++)
         {
             parsedStrings[0][i] = string[i];
@@ -99,34 +87,26 @@ char** stringParser(const char* string)
         
         parsedStrings[1] = NULL;
     }
-    else if(arraySize < 2) //something went HORRIBLY WRONG!
-    {
+    else if(arraySize < 2) { //something went HORRIBLY WRONG!
         return NULL;
     }
-    else
-    {
+    else {
         int i = 0;
         
-        for(int y = 0; true; y++)
-        {
-            for(int x = 0; true; x++)
-            {
-                if(string[i] == ' ' || string[i] == '\0')
-                {
+        for(int y = 0; true; y++) {
+            for(int x = 0; true; x++) {
+                if(string[i] == ' ' || string[i] == '\0') {
                     parsedStrings[y][x] = '\0';
                     break;
                 }
-                else
-                {
+                else {
                     parsedStrings[y][x] = string[i];
                 }
-                
                 i++;
             }
 
             if(string[i] == '\0')
                 break;
-            
             i++;
         }        
     }
@@ -136,21 +116,56 @@ char** stringParser(const char* string)
     return parsedStrings;
 }
 
-void listAllUsers(pClient clientList)
-{
+void addNewMessage(pText first, pText newMsg) {
+    if(first == NULL) {
+        newMsg->next = newMsg->prev = NULL;
+        first = newMsg;
+        return;
+    }
+    
+    pText aux = first;
+    
+    if(aux->next == NULL)
+        aux->next = newMsg;
+    else {
+        while(aux->next != NULL)
+            aux = aux->next;
+        
+        aux->next = newMsg;
+    }
+}
+
+void addNewTopic(pTopic first, pTopic newTopic) {
+    if(first == NULL) {
+        newTopic->next = newTopic->prev = NULL;
+        first = newTopic;
+        return;
+    }
+    
+    pText aux = first;
+    
+    if(aux->next == NULL)
+        aux->next = newTopic;
+    else {
+        while(aux->next != NULL)
+            aux = aux->next;
+        
+        aux->next = newTopic;
+    }
+}
+
+void listAllUsers(pClient clientList) {
     if(clientList == NULL)
         return;
     
-    printf("Currently Connected Users: \n");
+    printf("Currently Connected Users:\n");
     
     pClient aux = clientList;
     
-    do
-    {
+    do {
         printf("%d\n", aux->c_PID);
         aux = aux->next;
-    }
-    while(aux != NULL);
+    } while(aux != NULL);
 }
 
 void listAllMesages()

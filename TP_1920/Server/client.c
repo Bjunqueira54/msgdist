@@ -1,6 +1,5 @@
 #include "client.h"
 
-//Should be working 100%
 void addNewClient(pClient listStart, pClient newClient)
 {
     if(listStart == NULL)
@@ -25,7 +24,6 @@ void addNewClient(pClient listStart, pClient newClient)
     }
 }
 
-//Should be working 100%
 void removeClient(pClient client)
 {
     if(client == NULL || (client->next == NULL && client->prev == NULL))
@@ -96,11 +94,9 @@ void serverBroadcastExit(pClient listStart)
     
     pClient aux = listStart;
     
-    do
-    {
+    do {
         kill(aux->c_PID, SIGINT);
-    }
-    while(aux->next != NULL);
+    } while(aux->next != NULL);
 }
 
 void clientSignals(int sigNum, siginfo_t *info, void* extras)

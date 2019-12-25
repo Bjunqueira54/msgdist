@@ -45,12 +45,12 @@ extern bool Exit;
 extern bool Filter;
 //extern pClient clientList;
 
-void initializeVerifier(int*, int *);    
-void serverMainLoop(char*);
-bool stringCompare(char *, char *);
+void initializeVerifier(int*, int *);
 
-bool parseCommands(char cmd[]);
-bool parseOptionCommands(char cmd[]);
+void addNewMessage();
+void addNewTopic();
+
+void msgExpired();
 
 void listAllTopics();
 void listAllUsers(pClient);
