@@ -4,8 +4,7 @@ bool Exit, Filter;
 int childPID;
 pClient clientList;
 
-void terminateServer(int num)
-{
+void terminateServer(int num) {
     fprintf(stderr, "\n\nServidor recebeu SIGINT\n");
     
     deleteServerFiles();
@@ -19,8 +18,7 @@ void terminateServer(int num)
     exit (EXIT_SUCCESS);
 }
 
-pClient addTestClient(pClient clientList)
-{
+pClient addTestClient(pClient clientList) {
     pClient newClient = calloc(1, sizeof(Client));
     printf("Enter client PID: ");
     char s_pid[10];
@@ -40,16 +38,12 @@ pClient addTestClient(pClient clientList)
     
     if(clientList == NULL)
         clientList = newClient;
-    else
-    {
+    else {
         pClient aux = clientList;
         
         if(aux->next == NULL)
-        {
             aux->next = newClient;
-        }
-        else
-        {
+        else {
             while(aux->next != NULL)
                 aux = aux->next;
 
@@ -58,8 +52,7 @@ pClient addTestClient(pClient clientList)
     }
 }
 
-void testVerifier(int parent_write_pipe, int parent_read_pipe)
-{
+void testVerifier(int parent_write_pipe, int parent_read_pipe) {
     system("clear");
     
     printf("Write a message to send to the verifier (no need to write ##MSGEND##)\n");
@@ -79,8 +72,7 @@ void testVerifier(int parent_write_pipe, int parent_read_pipe)
     char verifier_char;
     int i = 0;
     
-    while(read(parent_read_pipe, &verifier_char, sizeof(char)) != 0)
-    {
+    while(read(parent_read_pipe, &verifier_char, sizeof(char)) != 0) {
         verifier_response[i] = verifier_char;
         
         if(verifier_char == '\n')
@@ -94,7 +86,8 @@ void testVerifier(int parent_write_pipe, int parent_read_pipe)
     printf("Number of wrong words: %s", verifier_response);
 }
 
-//Server
+/* ===== SERVER ===== */
+
 int main(int argc, char** argv) {
     if(createServerFiles() == -1)
         exit(EXIT_FAILURE);
@@ -108,9 +101,10 @@ int main(int argc, char** argv) {
        
     /* ===== LOCAL VARIABLES ===== */
 
+    pTopic topicList;
+    pText textList;
     int maxMessage, maxNot;
-    char* wordNot;
-    char cmd[CMD_SIZE];
+    char *wordNot, cmd[CMD_SIZE];
     struct sigaction cSignal, cAlarm;
     
     /* ===== SIGNAL HANDLING ===== */
@@ -126,6 +120,7 @@ int main(int argc, char** argv) {
     sigaction(SIGALRM, &cAlarm, NULL);
     
     /* ===== ENV VARS ===== */
+
     if(getenv("MAXMSG") != NULL)
         sscanf(getenv("MAXMSG"), "%d", &maxMessage);
     if(getenv("MAXNOT") != NULL)
@@ -136,8 +131,14 @@ int main(int argc, char** argv) {
     /* ===== PIPES ===== */
 
     int parent_read_pipe[2], parent_write_pipe[2];
-    
+
     initializeVerifier(parent_write_pipe, parent_read_pipe);
+
+    /* ===== THREADS ===== */
+
+    pthread_t *tid;
+
+    //pthread_create(...);
 
     /* ===== SERVER MAIN LOOP ===== */
 
@@ -166,13 +167,13 @@ int main(int argc, char** argv) {
             listAllUsers(clientList);
         }
         else if(strcmp(parsedCmd[0], "msg") == 0) {
-            listAllMesages();
+            listAllMesages(textList);
         }
         else if(strcmp(parsedCmd[0], "topics") == 0) {
-            listAllTopics();
+            listAllTopics(topicList);
         }
         else if(strcmp(parsedCmd[0], "prune") == 0) {
-            deleteEmptyTopics();
+            deleteEmptyTopics(topicList);
         }
         else if(strcmp(parsedCmd[0], "filter") == 0) {
             if(strcmp(parsedCmd[1], "on") == 0)

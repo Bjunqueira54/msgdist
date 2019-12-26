@@ -1,6 +1,6 @@
 #include "serverHeader.h"
 
-int server_file;
+int server_file, maxMessages;
 
 void initializeVerifier(int *parent_to_child, int *child_to_parent) {
     pipe(parent_to_child); // Server-to-Child pipe (Server write)
@@ -28,6 +28,25 @@ void initializeVerifier(int *parent_to_child, int *child_to_parent) {
         close(child_to_parent[1]);
         close(parent_to_child[0]);
     }
+}
+
+void* receiveMsgHandler(void* data) {
+    pText msg = (pText) data;
+
+    msg->article[strlen(msg->article) - 1] = '\0';
+
+    strncat(msg->article, " ##MSGEND##\n", sizeof(char) * 12);
+
+    //start reading from pipe
+}
+
+void receiveClientMsg() {
+
+
+}
+
+void sendMsgToVerifier() {
+    //need pipes    
 }
 
 char** stringParser(const char* string) {
@@ -125,6 +144,11 @@ void addNewMessage(pText first, pText newMsg) {
     
     pText aux = first;
     
+    if(countMsgs(aux) == maxMessages) {
+        fprintf(stderr, "Max number of messages reached\n");
+        return;
+    }
+
     if(aux->next == NULL)
         aux->next = newMsg;
     else {
@@ -133,6 +157,46 @@ void addNewMessage(pText first, pText newMsg) {
         
         aux->next = newMsg;
     }
+
+    fprintf(stderr, "New message added\n");
+}
+
+int countMsgs(pText m) {
+    int num = 0;
+
+    if(m == NULL)
+        return num;
+    
+    do {
+        m = m->next;
+        num++;
+    } while(m != NULL);
+
+    return num;
+}
+
+void removeExpiredMsg(pText list) { //será adapatado a uma thread
+    if(list == NULL)
+        return;
+
+    pText aux_n = list->next, aux = list;
+
+    do {
+        if(aux_n->duration == 0) {
+            if(aux_n->next == NULL) {
+                aux->next = NULL;
+                free(aux_n);
+            }
+            else {
+                aux_n = aux_n->next;
+                free(aux->next);
+                aux->next = aux_n;
+            }
+        }
+
+        aux = aux_n;
+        aux_n = aux_n->next;
+    } while(aux->next != NULL);
 }
 
 void addNewTopic(pTopic first, pTopic newTopic) {
@@ -142,7 +206,7 @@ void addNewTopic(pTopic first, pTopic newTopic) {
         return;
     }
     
-    pText aux = first;
+    pTopic aux = first;
     
     if(aux->next == NULL)
         aux->next = newTopic;
@@ -152,13 +216,15 @@ void addNewTopic(pTopic first, pTopic newTopic) {
         
         aux->next = newTopic;
     }
+
+    fprintf(stderr, "New topic added\n");
 }
 
 void listAllUsers(pClient clientList) {
     if(clientList == NULL)
         return;
     
-    printf("Currently Connected Users:\n");
+    printf("\nCurrently Connected Users:\n");
     
     pClient aux = clientList;
     
@@ -168,60 +234,86 @@ void listAllUsers(pClient clientList) {
     } while(aux != NULL);
 }
 
-void listAllMesages()
-{
-    printf("All Messages on the server: \n");
+void listAllMesages(pText list) {
+    if(list == NULL) {
+        printf("There are no messages on the server\n");
+        return;
+    }
+ 
+    pText aux = list;
+
+    printf("\nAll Messages on the server:\n");
+
+    do {
+        printf("%s\n", aux->title);
+        aux = aux->next;
+    } while(aux != NULL);
 }
 
-void listAllTopics()
-{
-    printf("Current Topics:\n");
+void listAllTopics(pTopic list) {
+    if(list == NULL) {
+        printf("There are no topics on the server\n");
+        return;
+    }
+
+    pTopic aux = list;
+    
+    printf("\nCurrent Topics:\n");
+
+    do {
+        printf("%s\n", aux->title);
+        aux = aux->next;
+    } while(aux != NULL);
 }
 
-void deleteEmptyTopics() 
-{
+void deleteEmptyTopics(pTopic list) {
+    if(list == NULL)
+        return;
+
+    pTopic aux = list, aux_n = list->next;
+
     printf("Deleting all empty topics from the server.\n");
+
+    do {
+        if(aux_n->TextStart == NULL)
+            printf("apagar"); //por terminar
+
+        aux = aux_n;
+        aux_n = aux_n->next;
+    } while(aux != NULL);
 }
 
-void killAllClients(pClient clientList)
-{
+void killAllClients(pClient clientList) {
     union sigval value;
     value.sival_int = 0;
     
     pClient aux = clientList;
 
-    while(aux != NULL)
-    {
+    do {
         sigqueue(aux->c_PID, SIGINT, value);
         aux = aux->next;
-    }
+    } while(aux != NULL);
 }
 
-int createServerFiles()
-{
+int createServerFiles() {
     struct stat tmpstat = {0};
     
     if(stat(MSGDIST_DIR, &tmpstat) == -1)
-    {
-        if(mkdir(MSGDIST_DIR, 0744) == -1)
-        {
+        if(mkdir(MSGDIST_DIR, 0744) == -1) {
             printf("Directory Creation: %d\n", errno);
             return -1;
         }
-    }
     
     server_file = open(SERVER_PID, O_RDWR);
     
-    if(server_file != -1)
-    {
+    if(server_file != -1) {
         fprintf(stderr, "Server already running\n");
         exit (EXIT_FAILURE);
     }
     
     server_file = open(SERVER_PID, O_RDWR | O_CREAT, 0644);
     
-    if(server_file == -1)
-    {
+    if(server_file == -1) {
         printf("File Creation: %d\n", errno);
         return -1;
     }
@@ -237,10 +329,8 @@ int createServerFiles()
     return 0;
 }
 
-int deleteServerFiles() 
-{    
-    if (remove(SERVER_PID) != 0)
-    {
+int deleteServerFiles() {    
+    if (remove(SERVER_PID) != 0) {
         fprintf(stderr, "Erro ao apagar o ficheiro\n"); 
         return -1;
     }

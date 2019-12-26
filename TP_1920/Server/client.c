@@ -1,35 +1,33 @@
 #include "client.h"
+#include "serverHeader.h"
 
-void addNewClient(pClient listStart, pClient newClient)
-{
-    if(listStart == NULL)
-    {
+void addNewClient(pClient listStart, pClient newClient) {
+    if(listStart == NULL) {
         newClient->next = newClient->prev = NULL;
         listStart = newClient;
         return;
     }
     
     pClient aux = listStart;
+    pText msg;
     
+    //aux->c_thread = malloc(sizeof(pthread_t)); //alocar memoria dinamica para thread
+    //pthread_create(&aux->c_thread, NULL, receiveMsgHandler, (void*) &msg); //maybe 
+
     if(aux->next == NULL)
-    {
         aux->next = newClient;
-    }
-    else
-    {
+    else {
         while(aux->next != NULL)
             aux = aux->next;
-        
+
         aux->next = newClient;
     }
 }
 
-void removeClient(pClient client)
-{
+void removeClient(pClient client) {
     if(client == NULL || (client->next == NULL && client->prev == NULL))
         return;
-    else
-    {
+    else {
         pClient Next;
         pClient Prev;
         
@@ -49,6 +47,7 @@ void removeClient(pClient client)
         Prev->next = Next;
         Next->prev = Prev;
         
+        //free(client->c_thread);
         free(client);
     }
 }

@@ -43,20 +43,23 @@ extern int childPID;
 extern int server_file;
 extern bool Exit;
 extern bool Filter;
-//extern pClient clientList;
 
-void initializeVerifier(int*, int *);
+void initializeVerifier(int *parent_to_child, int *child_to_parent);
 
-void addNewMessage();
-void addNewTopic();
+void* receiveMsgHandler(void* data);
+void sendMsgToVerifier();
+void receiveClientMsg();
+void addNewMessage(pText list, pText newMsg);
+int countMsgs(pText list);
+void addNewTopic(pTopic list, pTopic newTopic);
 
-void msgExpired();
+void removeExpiredMsg(pText list);
 
-void listAllTopics();
-void listAllUsers(pClient);
-void listAllMesages();
-void deleteEmptyTopics();
-void killAllClients(pClient);
+void listAllTopics(pTopic topicList);
+void listAllUsers(pClient clientList);
+void listAllMesages(pText textList);
+void deleteEmptyTopics(pTopic topicList);
+void killAllClients(pClient clientList);
 
 int deleteServerFiles();
 int createServerFiles();
