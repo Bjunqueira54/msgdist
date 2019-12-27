@@ -2,7 +2,7 @@
 
 bool Exit;
 bool Filter;
-int childPID;
+pid_t childPID;
 pClient clientList;
 
 void terminateServer(int num)
@@ -105,7 +105,6 @@ int main(int argc, char** argv)
     /* === GLOBAL VARIABLES === */
     Exit = false;
     Filter = true;
-    childPID = 1;
     clientList = NULL;
        
     /* ======================== */
@@ -141,7 +140,7 @@ int main(int argc, char** argv)
     /* === PIPES === */
     int parent_read_pipe[2], parent_write_pipe[2];
     
-    initializeVerifier(parent_write_pipe, parent_read_pipe);
+    childPID = initializeVerifier(parent_write_pipe, parent_read_pipe);
     /* ============= */
 
     /* === SERVER MAIN LOOP === */

@@ -39,13 +39,13 @@ typedef struct client Client, *pClient;
 #define BADWORDS "badwords.txt"
 
 extern int maxMessages;
-extern int childPID;
+extern pid_t childPID;
 extern int server_file;
 extern bool Exit;
 extern bool Filter;
 //extern pClient clientList;
 
-void initializeVerifier(int*, int *);    
+pid_t initializeVerifier(int*, int *);    
 void serverMainLoop(char*);
 bool stringCompare(char *, char *);
 

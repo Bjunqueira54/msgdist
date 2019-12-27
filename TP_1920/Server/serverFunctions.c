@@ -2,7 +2,7 @@
 
 int server_file;
 
-void initializeVerifier(int *parent_to_child, int *child_to_parent)
+pid_t initializeVerifier(int *parent_to_child, int *child_to_parent)
 {
     pipe(parent_to_child); //Server-to-Child pipe (Server write)
     pipe(child_to_parent); //Child-to-Server (Server Read)
@@ -29,6 +29,8 @@ void initializeVerifier(int *parent_to_child, int *child_to_parent)
     {
         close(child_to_parent[1]);
         close(parent_to_child[0]);
+        
+        return child_pid;
     }
 }
 

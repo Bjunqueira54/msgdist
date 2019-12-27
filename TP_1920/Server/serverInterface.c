@@ -24,7 +24,7 @@ void serverMainOutput(int flag)
             fprintf(stdout, "           prune - Eliminar topicos vazios\n");
             return;
         case 4:
-            fprintf(stdout, "\nVerificador desligado\n");
+            fprintf(stdout, "\nVerificador desligado, PID: %d\n", childPID);
             return;
         default:
             fprintf(stderr, "Erro\n");
