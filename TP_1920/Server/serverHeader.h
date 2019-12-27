@@ -44,7 +44,7 @@ extern int server_file;
 extern bool Exit;
 extern bool Filter;
 
-pid_t initializeVerifier(int*, int *);    
+pid_t initializeVerifier(int*, int *);
 void serverMainLoop(char*);
 bool stringCompare(char *, char *);
 
@@ -54,6 +54,8 @@ void receiveClientMsg();
 void addNewMessage(pText list, pText newMsg);
 int countMsgs(pText list);
 void addNewTopic(pTopic list, pTopic newTopic);
+
+void testVerifier(int, int, pText);
 
 void removeExpiredMsg(pText list);
 

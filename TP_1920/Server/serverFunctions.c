@@ -286,37 +286,47 @@ void deleteEmptyTopics(pTopic list) {
     } while(aux != NULL);
 }
 
-void killAllClients(pClient clientList) {
+void killAllClients(pClient clientList)
+{
+    if(clientList == NULL)
+        return;
+    
     union sigval value;
     value.sival_int = 0;
     
     pClient aux = clientList;
 
-    do {
+    do
+    {
         sigqueue(aux->c_PID, SIGINT, value);
         aux = aux->next;
-    } while(aux != NULL);
+    }
+    while(aux != NULL);
 }
 
-int createServerFiles() {
+int createServerFiles()
+{
     struct stat tmpstat = {0};
     
     if(stat(MSGDIST_DIR, &tmpstat) == -1)
-        if(mkdir(MSGDIST_DIR, 0744) == -1) {
+        if(mkdir(MSGDIST_DIR, 0744) == -1)
+        {
             printf("Directory Creation: %d\n", errno);
             return -1;
         }
     
     server_file = open(SERVER_PID, O_RDWR);
     
-    if(server_file != -1) {
+    if(server_file != -1)
+    {
         fprintf(stderr, "Server already running\n");
         exit (EXIT_FAILURE);
     }
     
     server_file = open(SERVER_PID, O_RDWR | O_CREAT, 0644);
     
-    if(server_file == -1) {
+    if(server_file == -1)
+    {
         printf("File Creation: %d\n", errno);
         return -1;
     }
@@ -332,8 +342,10 @@ int createServerFiles() {
     return 0;
 }
 
-int deleteServerFiles() {    
-    if (remove(SERVER_PID) != 0) {
+int deleteServerFiles()
+{    
+    if (remove(SERVER_PID) != 0)
+    {
         fprintf(stderr, "Erro ao apagar o ficheiro\n"); 
         return -1;
     }
@@ -341,4 +353,40 @@ int deleteServerFiles() {
     system("rmdir /tmp/msgdist");
     
     return 0; 
+}
+
+void testVerifier(int parent_write_pipe, int parent_read_pipe, pText newText)
+{
+    system("clear");
+    
+    printf("Write a message to send to the verifier (no need to write ##MSGEND##)\n");
+    printf("Message: ");
+    
+    char test_message[1000];
+    
+    fgets(test_message, (1000 - 12), stdin); //1000 - 12 because I need to strcat " ##MSGEND##\n" to it
+    
+    test_message[strlen(test_message) - 1] = '\0';
+    
+    strncat(test_message, " ##MSGEND##\n", sizeof(char) * 12);
+    
+    write(parent_write_pipe, test_message, strlen(test_message));
+    
+    char verifier_response[5];
+    char verifier_char;
+    int i = 0;
+    
+    while(read(parent_read_pipe, &verifier_char, sizeof(char)) != 0)
+    {
+        verifier_response[i] = verifier_char;
+        
+        if(verifier_char == '\n')
+            break;
+        
+        i++;
+    }
+    
+    verifier_response[i] = '\0';
+    
+    printf("Number of wrong words: %s", verifier_response);
 }

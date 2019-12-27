@@ -1,8 +1,10 @@
 #include "client.h"
 #include "serverHeader.h"
 
-void addNewClient(pClient listStart, pClient newClient) {
-    if(listStart == NULL) {
+void addNewClient(pClient listStart, pClient newClient)
+{
+    if(listStart == NULL)
+    {
         newClient->next = newClient->prev = NULL;
         listStart = newClient;
         return;
@@ -24,10 +26,12 @@ void addNewClient(pClient listStart, pClient newClient) {
     }
 }
 
-void removeClient(pClient client) {
+void removeClient(pClient client)
+{
     if(client == NULL || (client->next == NULL && client->prev == NULL))
         return;
-    else {
+    else
+    {
         pClient Next;
         pClient Prev;
         
