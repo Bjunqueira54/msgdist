@@ -1,37 +1,33 @@
 #include "client.h"
+#include "serverHeader.h"
 
-//Should be working 100%
-void addNewClient(pClient listStart, pClient newClient)
-{
-    if(listStart == NULL)
-    {
+void addNewClient(pClient listStart, pClient newClient) {
+    if(listStart == NULL) {
         newClient->next = newClient->prev = NULL;
         listStart = newClient;
         return;
     }
     
     pClient aux = listStart;
+    pText msg;
     
+    //aux->c_thread = malloc(sizeof(pthread_t)); //alocar memoria dinamica para thread
+    //pthread_create(&aux->c_thread, NULL, receiveMsgHandler, (void*) &msg); //maybe 
+
     if(aux->next == NULL)
-    {
         aux->next = newClient;
-    }
-    else
-    {
+    else {
         while(aux->next != NULL)
             aux = aux->next;
-        
+
         aux->next = newClient;
     }
 }
 
-//Should be working 100%
-void removeClient(pClient client)
-{
+void removeClient(pClient client) {
     if(client == NULL || (client->next == NULL && client->prev == NULL))
         return;
-    else
-    {
+    else {
         pClient Next;
         pClient Prev;
         
@@ -51,6 +47,7 @@ void removeClient(pClient client)
         Prev->next = Next;
         Next->prev = Prev;
         
+        //free(client->c_thread);
         free(client);
     }
 }
@@ -96,11 +93,9 @@ void serverBroadcastExit(pClient listStart)
     
     pClient aux = listStart;
     
-    do
-    {
+    do {
         kill(aux->c_PID, SIGINT);
-    }
-    while(aux->next != NULL);
+    } while(aux->next != NULL);
 }
 
 void clientSignals(int sigNum, siginfo_t *info, void* extras)

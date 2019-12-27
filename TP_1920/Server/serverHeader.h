@@ -43,20 +43,25 @@ extern pid_t childPID;
 extern int server_file;
 extern bool Exit;
 extern bool Filter;
-//extern pClient clientList;
 
 pid_t initializeVerifier(int*, int *);    
 void serverMainLoop(char*);
 bool stringCompare(char *, char *);
 
-bool parseCommands(char cmd[]);
-bool parseOptionCommands(char cmd[]);
+void* receiveMsgHandler(void* data);
+void sendMsgToVerifier();
+void receiveClientMsg();
+void addNewMessage(pText list, pText newMsg);
+int countMsgs(pText list);
+void addNewTopic(pTopic list, pTopic newTopic);
 
-void listAllTopics();
-void listAllUsers(pClient);
-void listAllMesages();
-void deleteEmptyTopics();
-void killAllClients(pClient);
+void removeExpiredMsg(pText list);
+
+void listAllTopics(pTopic topicList);
+void listAllUsers(pClient clientList);
+void listAllMesages(pText textList);
+void deleteEmptyTopics(pTopic topicList);
+void killAllClients(pClient clientList);
 
 int deleteServerFiles();
 int createServerFiles();

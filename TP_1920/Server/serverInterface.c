@@ -5,29 +5,29 @@ void serverMainOutput(int flag)
     switch(flag)
     {
         case 0: // Command
-            fprintf(stdout, "\nComando: ");
+            fprintf(stdout, "\nCommand: ");
             return;
         case 1: // Server Shutdown
-            fprintf(stdout, "\nGestor vai desligar\n");
+            fprintf(stdout, "\nServer will shutdown\n");
             return;
         case 2: // Invalid Command
-            fprintf(stdout, "Comando invalido\n");
+            fprintf(stdout, "Invalid command\n");
             return;
         case 3: // Help
-            fprintf(stdout, "        shutdown - Desliga o gestor\n");
-            fprintf(stdout, "           users - Listar utilizadores\n");
-            fprintf(stdout, "  kick -u <user> - Excluir utilizador\n");
-            fprintf(stdout, "             msg - Listar mensagens\n");
-            fprintf(stdout, "    del -m <msg> - Listar mensagens\n");
-            fprintf(stdout, "          topics - Listar topicos\n");
-            fprintf(stdout, "topic -t <topic> - Listar mensagens do topico\n");
-            fprintf(stdout, "           prune - Eliminar topicos vazios\n");
+            fprintf(stdout, "     shutdown - Server shutdown\n");
+            fprintf(stdout, "        users - List all users\n");
+            fprintf(stdout, "  kick <user> - Exclude a user\n");
+            fprintf(stdout, "          msg - List all messages\n");
+            fprintf(stdout, "    del <msg> - Delete a message\n");
+            fprintf(stdout, "       topics - List all topics\n");
+            fprintf(stdout, "topic <topic> - List messages in topic\n");
+            fprintf(stdout, "        prune - Delete empty topics\n");
             return;
         case 4:
             fprintf(stdout, "\nVerificador desligado, PID: %d\n", childPID);
             return;
         default:
-            fprintf(stderr, "Erro\n");
+            fprintf(stderr, "Error\n");
             return;
     }
 }
