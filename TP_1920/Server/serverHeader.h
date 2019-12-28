@@ -34,26 +34,25 @@ typedef struct client Client, *pClient;
 #include "../topic.h"
 #include "../text.h"
 #include "client.h"
-#include "serverInterface.h"
 
 #define BADWORDS "badwords.txt"
 
-extern int maxMessages;
+extern int maxMessages, server_file;
+extern bool Exit, Filter;
 extern pid_t childPID;
-extern int server_file;
-extern bool Exit;
-extern bool Filter;
+extern pText textList;
+extern pTopic topicList;
 
-pid_t initializeVerifier(int*, int *);
+pid_t initializeVerifier(int* , int *);
 void serverMainLoop(char*);
 bool stringCompare(char *, char *);
 
 void* receiveMsgHandler(void* data);
 void sendMsgToVerifier();
 void receiveClientMsg();
-void addNewMessage(pText list, pText newMsg);
-int countMsgs(pText list);
-void addNewTopic(pTopic list, pTopic newTopic);
+void addNewMessage(pText, pText);
+int countMsgs(pText);
+void addNewTopic(pTopic, pTopic);
 
 void testVerifier(int, int, pText);
 

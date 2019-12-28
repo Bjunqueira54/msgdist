@@ -1,9 +1,10 @@
 #include "serverHeader.h"
 
-bool Exit;
-bool Filter;
+bool Exit, Filter;
 pid_t childPID;
 pClient clientList;
+pText textList;
+pTopic topicList;
 
 void terminateServer(int num)
 {
@@ -20,41 +21,15 @@ void terminateServer(int num)
     exit (EXIT_SUCCESS);
 }
 
-pClient addTestClient(pClient clientList)
+void clientSignals(int sigNum, siginfo_t *info, void* extras)
 {
-    pClient newClient = calloc(1, sizeof(Client));
-    printf("Enter client PID: ");
-    char s_pid[10];
-    fgets(s_pid, 10, stdin);
     
-    s_pid[strlen(s_pid) - 1] = '\0';
-    pid_t c_pid;
-    
-    sscanf(s_pid, "%d", &c_pid);
-    
-    newClient->c_PID = c_pid;
-    newClient->c_pipe = 0;
-    //newClient->c_thread = NULL;
-    newClient->next = NULL;
-    newClient->prev = NULL;
-    //newClient->username = NULL;
-    
-    if(clientList == NULL)
-        clientList = newClient;
-    else
-    {
-        pClient aux = clientList;
-        
-        if(aux->next == NULL)
-            aux->next = newClient;
-        else
-        {
-            while(aux->next != NULL)
-                aux = aux->next;
+}
 
-            aux->next = newClient;
-        }
-    }
+void getClientPid(int sigNum, siginfo_t *info, void* extras)
+{
+    pClient newClient = createNewClient(info->si_pid);
+    addNewClient(clientList, newClient);
 }
 
 /* ===== SERVER ===== */
@@ -112,7 +87,7 @@ int main(int argc, char** argv)
     fprintf(stdout, "'help' para ajuda\n");
     while(!Exit)
     {
-        serverMainOutput(0);
+        fprintf(stdout, "\nCommand: ");
         fgets(cmd, CMD_SIZE, stdin);
         cmd[strlen(cmd) - 1] = '\0';
         
@@ -121,7 +96,7 @@ int main(int argc, char** argv)
         char **parsedCmd = stringParser(cmd);
     
         if(parsedCmd == NULL)
-            serverMainOutput(2);
+            fprintf(stdout, "Invalid command\n");
 
         if(strcmp(parsedCmd[0], "shutdown") == 0)
         {
@@ -131,7 +106,14 @@ int main(int argc, char** argv)
         }
         else if(strcmp(parsedCmd[0], "help") == 0)
         {
-            serverMainOutput(3);
+            fprintf(stdout, "     shutdown - Server shutdown\n");
+            fprintf(stdout, "        users - List all users\n");
+            fprintf(stdout, "  kick <user> - Exclude a user\n");
+            fprintf(stdout, "          msg - List all messages\n");
+            fprintf(stdout, "    del <msg> - Delete a message\n");
+            fprintf(stdout, "       topics - List all topics\n");
+            fprintf(stdout, "topic <topic> - List messages in topic\n");
+            fprintf(stdout, "        prune - Delete empty topics\n");
         }
         else if(strcmp(parsedCmd[0], "users") == 0)
         {
@@ -156,7 +138,7 @@ int main(int argc, char** argv)
             else if(strcmp(parsedCmd[1], "off") == 0)
                 Filter = false;
             else
-                printf("Filter option not recognized\n");
+                fprintf(stdout, "Filter option not recognized\n");
         }
         else if(strcmp(parsedCmd[0], "addclient") == 0)
         {
@@ -167,7 +149,7 @@ int main(int argc, char** argv)
             testVerifier(parent_write_pipe[1], parent_read_pipe[0], NULL);
         }
         else
-            serverMainOutput(2);
+            fprintf(stdout, "Invalid command\n");
     }
     
     /* ===== SERVER SHUTDOWN ===== */
@@ -175,8 +157,8 @@ int main(int argc, char** argv)
     deleteServerFiles();
     kill(childPID, SIGUSR2);
     
-    serverMainOutput(4);
-    serverMainOutput(1);
+    fprintf(stdout, "\nVerifier shutdown\n");
+    fprintf(stdout, "\nServer will shutdown\n");
 
     return (EXIT_SUCCESS);
 }

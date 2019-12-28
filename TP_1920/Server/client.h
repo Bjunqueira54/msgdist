@@ -19,11 +19,12 @@ extern "C" {
         pClient prev;
     };
     
-    void addNewClient(pClient listStart, pClient newClient);
-    void removeClient(pClient client);
-    pClient findClientByUsername(pClient listStart, char* username);
-    pClient findClientByPID(pClient listStart, pid_t PID);
-    void serverBroadcastExit(pClient listStart);
+    void addNewClient(pClient, pClient);
+    pClient createNewClient(pid_t);
+    void removeClient(pClient);
+    pClient findClientByUsername(pClient, char*);
+    pClient findClientByPID(pClient, pid_t);
+    void serverBroadcastExit(pClient);
     void clientSignals(int, siginfo_t*, void*);
     void getClientPid(int, siginfo_t*, void*);
     

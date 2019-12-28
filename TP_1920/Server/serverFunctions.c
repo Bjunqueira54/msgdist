@@ -33,7 +33,8 @@ pid_t initializeVerifier(int *parent_to_child, int *child_to_parent)
     }
 }
 
-void* receiveMsgHandler(void* data) {
+void* receiveMsgHandler(void* data)
+{
     pText msg = (pText) data;
 
     msg->article[strlen(msg->article) - 1] = '\0';
@@ -43,16 +44,13 @@ void* receiveMsgHandler(void* data) {
     //start reading from pipe
 }
 
-void receiveClientMsg() {
-
+void receiveClientMsg()
+{
 
 }
 
-void sendMsgToVerifier() {
-    //need pipes    
-}
-
-char** stringParser(const char* string) {
+char** stringParser(const char* string)
+{
     if(string == NULL)
         return NULL;
     
@@ -60,18 +58,22 @@ char** stringParser(const char* string) {
     int maxWordSize = 0;
     int currentWordSize = 0;
     
-    for(int i = 0; true; i++) {
-        if(string[i] == ' ') {
+    for(int i = 0; true; i++)
+	{
+        if(string[i] == ' ')
+		{
             spaces++;
             
-            if(currentWordSize >= maxWordSize) {
+            if(currentWordSize >= maxWordSize)
+			{
                 maxWordSize = currentWordSize;
                 currentWordSize = 0;
             }
             continue;
         }
         else if(string[i] == '\0') {
-            if(currentWordSize >= maxWordSize) {
+            if(currentWordSize >= maxWordSize)
+			{
                 maxWordSize = currentWordSize;
                 currentWordSize = 0;
             }
@@ -88,10 +90,12 @@ char** stringParser(const char* string) {
     if(parsedStrings == NULL)
         return NULL;
     
-    for(int i = 0; i < arraySize; i++) {
+    for(int i = 0; i < arraySize; i++)
+	{
         parsedStrings[i] = calloc(maxWordSize, sizeof(char));
         
-        if(parsedStrings[i] == NULL) {
+        if(parsedStrings[i] == NULL)
+		{
             printf("Allocation Error!\n");
             
             for(int j = 0; j < i; j++)
@@ -112,16 +116,20 @@ char** stringParser(const char* string) {
     else if(arraySize < 2) { //something went HORRIBLY WRONG!
         return NULL;
     }
-    else {
+    else
+	{
         int i = 0;
         
-        for(int y = 0; true; y++) {
+        for(int y = 0; true; y++)
+		{
             for(int x = 0; true; x++) {
-                if(string[i] == ' ' || string[i] == '\0') {
+                if(string[i] == ' ' || string[i] == '\0')
+				{
                     parsedStrings[y][x] = '\0';
                     break;
                 }
-                else {
+                else
+				{
                     parsedStrings[y][x] = string[i];
                 }
                 i++;
@@ -138,8 +146,10 @@ char** stringParser(const char* string) {
     return parsedStrings;
 }
 
-void addNewMessage(pText first, pText newMsg) {
-    if(first == NULL) {
+void addNewMessage(pText first, pText newMsg)
+{
+    if(first == NULL)
+	{
         newMsg->next = newMsg->prev = NULL;
         first = newMsg;
         return;
@@ -206,6 +216,7 @@ void addNewTopic(pTopic first, pTopic newTopic) {
     if(first == NULL) {
         newTopic->next = newTopic->prev = NULL;
         first = newTopic;
+        fprintf(stderr, "New topic added\n");
         return;
     }
     
