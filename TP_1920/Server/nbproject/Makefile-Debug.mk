@@ -35,10 +35,10 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 
 # Object Files
 OBJECTFILES= \
+	${OBJECTDIR}/ServerThreadHandles.o \
 	${OBJECTDIR}/client.o \
 	${OBJECTDIR}/main.o \
-	${OBJECTDIR}/serverFunctions.o \
-	${OBJECTDIR}/serverInterface.o
+	${OBJECTDIR}/serverFunctions.o
 
 
 # C Compiler Flags
@@ -65,6 +65,11 @@ ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/server: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
 	${LINK.c} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/server ${OBJECTFILES} ${LDLIBSOPTIONS}
 
+${OBJECTDIR}/ServerThreadHandles.o: ServerThreadHandles.c
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.c) -g -std=c99 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/ServerThreadHandles.o ServerThreadHandles.c
+
 ${OBJECTDIR}/client.o: client.c
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
@@ -79,11 +84,6 @@ ${OBJECTDIR}/serverFunctions.o: serverFunctions.c
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.c) -g -std=c99 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/serverFunctions.o serverFunctions.c
-
-${OBJECTDIR}/serverInterface.o: serverInterface.c
-	${MKDIR} -p ${OBJECTDIR}
-	${RM} "$@.d"
-	$(COMPILE.c) -g -std=c99 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/serverInterface.o serverInterface.c
 
 # Subprojects
 .build-subprojects:

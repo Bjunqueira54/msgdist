@@ -81,6 +81,10 @@ int main(int argc, char** argv)
     childPID = initializeVerifier(parent_write_pipe, parent_read_pipe);
 
     /* ===== THREADS ===== */
+    
+    pthread_t newClientThread;
+    
+    pthread_create(&newClientThread, NULL, func(), (void*) &arg);
 
     /* ===== SERVER MAIN LOOP ===== */
 

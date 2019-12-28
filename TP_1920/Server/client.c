@@ -74,12 +74,13 @@ void* awaitClientHandler(void* data)
         {
             if(FD_ISSET(cli->c_pipe, &fds)) //confirmar que select leu do pipe
             {
-				pText newText = malloc(sizeof(Text));
+		pText newText = malloc(sizeof(Text));
 
                 int n = read(cli->c_pipe, newText->title, sizeof(newText->title));
-				if(n > 0)
+                
+                if(n > 0)
                     newText->title[n-1] = '\0';
-			}
+            }
         }
     }
 }
