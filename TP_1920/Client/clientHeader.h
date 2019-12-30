@@ -14,7 +14,9 @@ extern "C" {
 #include <stdlib.h>
 #include <ctype.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <signal.h>
+#include <errno.h>
 #include <getopt.h>
 #include <string.h>
 #include <stdbool.h>

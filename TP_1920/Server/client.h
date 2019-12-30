@@ -9,11 +9,12 @@ extern "C" {
 
     struct client
     {
-        char username[8];
+        char username[MAXUSERLEN];
         
         pid_t c_PID;
         pthread_t c_thread;
         int c_pipe;
+        int s_pipe;
         
         pClient next;
         pClient prev;

@@ -44,18 +44,10 @@ void* newClientThreadHandle(void* arg)
                 
                 if(n > 0)
                 {
-                    buffer[n-1] = '\0';
-                    sscanf(buffer, "%d", &newClient->c_PID);
-                    memset(buffer, 0, sizeof(char) * 50);
-                }
-                
-                n = read(pipe_fd, buffer, sizeof(char) * 50);
-                
-                if(n > 0)
-                {
-                    buffer[n-1] = '\0';
-                    sscanf(buffer, "%s", newClient->username);
-                    memset(buffer, 0, sizeof(char) * 50);
+                    char** client_info = stringParser(buffer);
+                    
+                    strncpy(newClient->username, client_info[0], MAXUSERLEN);
+                    sscanf(client_info[1], "%d", &newClient->c_PID);
                 }
                 
                 newClient = createNewClientPipes(newClient);

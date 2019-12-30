@@ -13,8 +13,7 @@ int main(int argc, char** argv)
         exit (EXIT_FAILURE);
     }
 
-    char username[MAXUSERLEN];
-    *username = 0;
+    char username[MAXUSERLEN] = "";
 
     char c = getopt(argc, argv, "u:");
 
@@ -36,12 +35,12 @@ int main(int argc, char** argv)
         exit (EXIT_FAILURE);
     }
 
-    ////////////////////////////////
-    ///Iniciar todas as variaveis///
-    ////////////////////////////////
+    ////////////////////////
+    ///Init all variables///
+    ////////////////////////
 
     pid_t server_pid;
-    pid_t self_pid;
+    pid_t self_pid = getpid();
 
     pthread_t notification_thread;
     Exit = false;
@@ -49,7 +48,14 @@ int main(int argc, char** argv)
 
     int current_topic_id = 0;
     int serverpidfd;
-    char pid[6];
+    int client_read_pipe;
+    int server_write_pipe;
+    
+    char pid[6]; //server pid string
+    char server_main_pipe[25];  //server main pipe path string
+    char client_info[MAXUSERLEN + 10] = ""; //client info string
+    char client_main_pipe[15]; //client main pipe name string
+    char client_main_pipe_path[50]; //client main pipe path string
 
     ///////////
     ///Pipes///
@@ -64,25 +70,69 @@ int main(int argc, char** argv)
         exit (EXIT_FAILURE);
     }
     
-    read(serverpidfd, pid, sizeof(char)*6);
+    read(serverpidfd, pid, sizeof(char) * 6);
     
     sscanf(pid, "%d", &server_pid);
     
-    kill(server_pid, SIGALRM);
+    snprintf(server_main_pipe, 25, "/tmp/msgdist/%d_main", server_pid);
+    
+    //Open Server Main Pipe and write client info
+    
+    client_read_pipe = open(server_main_pipe, O_WRONLY);
+    
+    if(client_read_pipe == -1)
+    {
+        fprintf(stderr, "Something went wrong\nServer Main Pipe open error: %s\n", strerror(errno));
+        getchar();
+    }
+    
+    snprintf(client_info, MAXUSERLEN + 10, "%s %d", username, getpid());
+    
+    write(client_read_pipe, client_info, strlen(client_info));
+    
+    //open Server Write Pipe first.
+    
+    snprintf(client_main_pipe, 15, PIPE_SV, self_pid);
+    snprintf(client_main_pipe_path, 50, "%s/%s", MSGDIST_DIR, client_main_pipe);
+    
+    server_write_pipe = open(client_main_pipe_path, O_WRONLY);
+    
+    if(server_write_pipe == -1)
+    {
+        fprintf(stderr, "Something went wrong\nserver_write_pipe open error: %s\n", strerror(errno));
+    }
+    
+    //Open Client Read second.
+    //Re-Using Variables client_main_pipe & client_main_pipe_path!
+    
+    memset(client_main_pipe, 0, sizeof(char) * 15);
+    memset(client_main_pipe_path, 0, sizeof(char) * 25);
+    
+    snprintf(client_main_pipe, 15, PIPE_CL, self_pid);
+    snprintf(client_main_pipe_path, 50, "%s/%s", MSGDIST_DIR, client_main_pipe);
+    
+    mkfifo(client_main_pipe_path, 0600);
+    
+    client_read_pipe = open(client_main_pipe_path, O_RDONLY);
+    
+    if(client_read_pipe == -1)
+    {
+        fprintf(stderr, "Something went wrong\nclient_read_pipe open error: %s\n", strerror(errno));
+    }
+    
+    ///////////////////
+    ///Start ncurses///
+    ///////////////////
 
-    ///////////////////////
-    ///Iniciar o ncurses///
-    ///////////////////////
+    initscr();              //Starts the main ncurses screen 'stdscr'
+    start_color();          //Turns terminal colors on
+    noecho();               //Turns off character echoing
+    curs_set(0);            //Turns off terminal cursor
+    keypad(stdscr, true);   //Turns on the keypad
 
-    initscr();              //Inicia a janela principal 'stdscr' do ncurses
-    start_color();          //Liga as cores
-    noecho();               //Desliga o echo'ing de characteres
-    curs_set(0);            //Desliga o piscar do cursor no terminal
-    keypad(stdscr, true);   //Liga o keypad
-
-    ////////////////////////////////////
-    ///Iniciar o tratamento do sinais///
-    ////////////////////////////////////
+    //////////////////////////
+    ///Init signal handling///
+    //////////////////////////
     
     struct sigaction sigUSR1, sigUSR2, sigALRM;
     
@@ -97,9 +147,9 @@ int main(int argc, char** argv)
     
     signal(SIGINT, SIGINT_Handler);
     
-    ////////////////////////
-    ///Iniciar as Threads///
-    ////////////////////////
+    //////////////////
+    ///Thread Start///
+    //////////////////
     
     drawBox(stdscr);
     mvwaddstr(stdscr, 1, 1, "Welcome to MSGDIST!");
