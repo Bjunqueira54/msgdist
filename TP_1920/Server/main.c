@@ -6,6 +6,8 @@ pClient clientList;
 pText textList;
 pTopic topicList;
 
+pthread_mutex_t client_lock, temp_text_lock;
+
 void terminateServer(int num)
 {
     fprintf(stderr, "\n\nServidor recebeu SIGINT\n");
@@ -26,11 +28,11 @@ void clientSignals(int sigNum, siginfo_t *info, void* extras)
     
 }
 
-void getClientPid(int sigNum, siginfo_t *info, void* extras)
+/*void getClientPid(int sigNum, siginfo_t *info, void* extras)
 {
     pClient newClient = createNewClient(info->si_pid);
     addNewClient(clientList, newClient);
-}
+}*/
 
 /* ===== SERVER ===== */
 
@@ -61,9 +63,9 @@ int main(int argc, char** argv)
     cSignal.sa_sigaction = &clientSignals;
     sigaction(SIGUSR1, &cSignal, NULL);
     
-    cAlarm.sa_flags = SA_SIGINFO;
+    /*cAlarm.sa_flags = SA_SIGINFO;
     cAlarm.sa_sigaction = &getClientPid;
-    sigaction(SIGALRM, &cAlarm, NULL);
+    sigaction(SIGALRM, &cAlarm, NULL);*/
     
     /* ===== ENV VARS ===== */
 
@@ -80,11 +82,16 @@ int main(int argc, char** argv)
 
     childPID = initializeVerifier(parent_write_pipe, parent_read_pipe);
 
+    /* ===== MUTEXES ===== */
+    
+    pthread_mutex_init(&client_lock, NULL);
+    pthread_mutex_init(&temp_text_lock, NULL);
+    
     /* ===== THREADS ===== */
     
     pthread_t newClientThread;
     
-    pthread_create(&newClientThread, NULL, func(), (void*) &arg);
+    pthread_create(&newClientThread, NULL, &newClientThreadHandle, (void*) clientList);
 
     /* ===== SERVER MAIN LOOP ===== */
 
@@ -144,10 +151,10 @@ int main(int argc, char** argv)
             else
                 fprintf(stdout, "Filter option not recognized\n");
         }
-        else if(strcmp(parsedCmd[0], "addclient") == 0)
+        /*else if(strcmp(parsedCmd[0], "addclient") == 0)
         {
             clientList = addTestClient(clientList); //just to test signalling
-        }
+        }*/
         else if(strcmp(parsedCmd[0], "test") == 0)
         {
             testVerifier(parent_write_pipe[1], parent_read_pipe[0], NULL);
@@ -160,6 +167,11 @@ int main(int argc, char** argv)
     
     deleteServerFiles();
     kill(childPID, SIGUSR2);
+    
+    pthread_join(newClientThread, NULL);
+    
+    pthread_mutex_destroy(&client_lock);
+    pthread_mutex_destroy(&temp_text_lock);
     
     fprintf(stdout, "\nVerifier shutdown\n");
     fprintf(stdout, "\nServer will shutdown\n");

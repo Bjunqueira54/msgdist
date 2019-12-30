@@ -7,7 +7,9 @@ extern "C" {
 
 #include "serverHeader.h"
 
-
+    void ThreadKill(int);
+    void* newClientThreadHandle(void*);
+    
 #ifdef __cplusplus
 }
 #endif

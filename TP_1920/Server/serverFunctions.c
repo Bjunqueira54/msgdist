@@ -9,7 +9,8 @@ pid_t initializeVerifier(int *parent_to_child, int *child_to_parent)
 
     pid_t child_pid = fork();
     
-    if(child_pid == 0) { // Child
+    if(child_pid == 0) // Child
+    { 
         /* Fechar estremidades nao usadas */
         close(child_to_parent[0]);
         close(parent_to_child[1]);
@@ -25,7 +26,8 @@ pid_t initializeVerifier(int *parent_to_child, int *child_to_parent)
         if(execlp("./verificador", "verificador", BADWORDS, (char *) NULL) == -1)
             fprintf(stderr, "Error starting the verifier!\n");
     }
-    else { // Parent
+    else // Parent
+    {
         close(child_to_parent[1]);
         close(parent_to_child[0]);
         
@@ -59,21 +61,22 @@ char** stringParser(const char* string)
     int currentWordSize = 0;
     
     for(int i = 0; true; i++)
-	{
+    {
         if(string[i] == ' ')
-		{
+        {
             spaces++;
             
             if(currentWordSize >= maxWordSize)
-			{
+            {
                 maxWordSize = currentWordSize;
                 currentWordSize = 0;
             }
             continue;
         }
-        else if(string[i] == '\0') {
+        else if(string[i] == '\0')
+        {
             if(currentWordSize >= maxWordSize)
-			{
+            {
                 maxWordSize = currentWordSize;
                 currentWordSize = 0;
             }
@@ -91,11 +94,11 @@ char** stringParser(const char* string)
         return NULL;
     
     for(int i = 0; i < arraySize; i++)
-	{
+    {
         parsedStrings[i] = calloc(maxWordSize, sizeof(char));
         
         if(parsedStrings[i] == NULL)
-		{
+        {
             printf("Allocation Error!\n");
             
             for(int j = 0; j < i; j++)
@@ -105,7 +108,8 @@ char** stringParser(const char* string)
         }
     }
     
-    if(arraySize == 2) { //Only 1 word + NULL 
+    if(arraySize == 2) //Only 1 word + NULL
+    { 
         for(int i = 0; string[i] != '\0'; i++)
         {
             parsedStrings[0][i] = string[i];
@@ -113,30 +117,30 @@ char** stringParser(const char* string)
         
         parsedStrings[1] = NULL;
     }
-    else if(arraySize < 2) { //something went HORRIBLY WRONG!
+    else if(arraySize < 2) //something went HORRIBLY WRONG!
         return NULL;
-    }
     else
-	{
+    {
         int i = 0;
         
         for(int y = 0; true; y++)
-		{
-            for(int x = 0; true; x++) {
+        {
+            for(int x = 0; true; x++)
+            {
                 if(string[i] == ' ' || string[i] == '\0')
-				{
+                {
                     parsedStrings[y][x] = '\0';
                     break;
                 }
                 else
-				{
                     parsedStrings[y][x] = string[i];
-                }
+                
                 i++;
             }
 
             if(string[i] == '\0')
                 break;
+            
             i++;
         }        
     }
@@ -149,7 +153,7 @@ char** stringParser(const char* string)
 void addNewMessage(pText first, pText newMsg)
 {
     if(first == NULL)
-	{
+    {
         newMsg->next = newMsg->prev = NULL;
         first = newMsg;
         return;
@@ -157,14 +161,16 @@ void addNewMessage(pText first, pText newMsg)
     
     pText aux = first;
     
-    if(countMsgs(aux) == maxMessages) {
+    if(countMsgs(aux) == maxMessages)
+    {
         fprintf(stderr, "Max number of messages reached\n");
         return;
     }
 
     if(aux->next == NULL)
         aux->next = newMsg;
-    else {
+    else
+    {
         while(aux->next != NULL)
             aux = aux->next;
         
@@ -174,33 +180,41 @@ void addNewMessage(pText first, pText newMsg)
     fprintf(stderr, "New message added\n");
 }
 
-int countMsgs(pText m) {
+int countMsgs(pText m)
+{
     int num = 0;
 
     if(m == NULL)
         return num;
     
-    do {
+    do
+    {
         m = m->next;
         num++;
-    } while(m != NULL);
+    }
+    while(m != NULL);
 
     return num;
 }
 
-void removeExpiredMsg(pText list) { //será adapatado a uma thread
+void removeExpiredMsg(pText list) //será adapatado a uma thread
+{ 
     if(list == NULL)
         return;
 
     pText aux_n = list->next, aux = list;
 
-    do {
-        if(aux_n->duration == 0) {
-            if(aux_n->next == NULL) {
+    do
+    {
+        if(aux_n->duration == 0)
+        {
+            if(aux_n->next == NULL)
+            {
                 aux->next = NULL;
                 free(aux_n);
             }
-            else {
+            else
+            {
                 aux_n = aux_n->next;
                 free(aux->next);
                 aux->next = aux_n;
@@ -209,11 +223,14 @@ void removeExpiredMsg(pText list) { //será adapatado a uma thread
 
         aux = aux_n;
         aux_n = aux_n->next;
-    } while(aux->next != NULL);
+    }
+    while(aux->next != NULL);
 }
 
-void addNewTopic(pTopic first, pTopic newTopic) {
-    if(first == NULL) {
+void addNewTopic(pTopic first, pTopic newTopic)
+{
+    if(first == NULL)
+    {
         newTopic->next = newTopic->prev = NULL;
         first = newTopic;
         fprintf(stderr, "New topic added\n");
@@ -224,7 +241,8 @@ void addNewTopic(pTopic first, pTopic newTopic) {
     
     if(aux->next == NULL)
         aux->next = newTopic;
-    else {
+    else
+    {
         while(aux->next != NULL)
             aux = aux->next;
         
@@ -234,7 +252,8 @@ void addNewTopic(pTopic first, pTopic newTopic) {
     fprintf(stderr, "New topic added\n");
 }
 
-void listAllUsers(pClient clientList) {
+void listAllUsers(pClient clientList)
+{
     if(clientList == NULL)
         return;
     
@@ -242,14 +261,18 @@ void listAllUsers(pClient clientList) {
     
     pClient aux = clientList;
     
-    do {
+    do
+    {
         printf("%d\n", aux->c_PID);
         aux = aux->next;
-    } while(aux != NULL);
+    }
+    while(aux != NULL);
 }
 
-void listAllMesages(pText list) {
-    if(list == NULL) {
+void listAllMesages(pText list)
+{
+    if(list == NULL)
+    {
         printf("There are no messages on the server\n");
         return;
     }
@@ -258,14 +281,18 @@ void listAllMesages(pText list) {
 
     printf("\nAll Messages on the server:\n");
 
-    do {
+    do
+    {
         printf("%s\n", aux->title);
         aux = aux->next;
-    } while(aux != NULL);
+    }
+    while(aux != NULL);
 }
 
-void listAllTopics(pTopic list) {
-    if(list == NULL) {
+void listAllTopics(pTopic list)
+{
+    if(list == NULL)
+    {
         printf("There are no topics on the server\n");
         return;
     }
@@ -274,13 +301,16 @@ void listAllTopics(pTopic list) {
     
     printf("\nCurrent Topics:\n");
 
-    do {
+    do
+    {
         printf("%s\n", aux->title);
         aux = aux->next;
-    } while(aux != NULL);
+    }
+    while(aux != NULL);
 }
 
-void deleteEmptyTopics(pTopic list) {
+void deleteEmptyTopics(pTopic list)
+{
     if(list == NULL)
         return;
 
@@ -288,13 +318,15 @@ void deleteEmptyTopics(pTopic list) {
 
     printf("Deleting all empty topics from the server.\n");
 
-    do {
+    do
+    {
         if(aux_n->TextStart == NULL)
             printf("apagar"); //por terminar
 
         aux = aux_n;
         aux_n = aux_n->next;
-    } while(aux != NULL);
+    }
+    while(aux != NULL);
 }
 
 void killAllClients(pClient clientList)
@@ -305,14 +337,16 @@ void killAllClients(pClient clientList)
     union sigval value;
     value.sival_int = 0;
     
-    pClient aux = clientList;
-
-    do
+    for(pClient aux = clientList; aux != NULL;)
     {
         sigqueue(aux->c_PID, SIGINT, value);
+        pthread_kill(aux->c_thread, SIGINT);
+        pthread_join(aux->c_thread, NULL);
+        
+        pClient aux2 = aux;
         aux = aux->next;
+        free(aux2);
     }
-    while(aux != NULL);
 }
 
 int createServerFiles()
@@ -320,11 +354,13 @@ int createServerFiles()
     struct stat tmpstat = {0};
     
     if(stat(MSGDIST_DIR, &tmpstat) == -1)
+    {
         if(mkdir(MSGDIST_DIR, 0744) == -1)
         {
             printf("Directory Creation: %d\n", errno);
             return -1;
         }
+    }
     
     server_file = open(SERVER_PID, O_RDWR);
     
@@ -361,6 +397,7 @@ int deleteServerFiles()
         return -1;
     }
     
+    system("rm /tmp/msgdist/*");
     system("rmdir /tmp/msgdist");
     
     return 0; 

@@ -10,6 +10,7 @@ extern "C" {
 #define MSGDIST_DIR "/tmp/msgdist"
 #define SERVER_PID "/tmp/msgdist/msgdist_serverpid"
 
+#define MAIN_PIPE "%d_main"
 #define PIPE_CL "%d_client"
 #define PIPE_SV "%d_server"
 

@@ -1,15 +1,15 @@
 #include "client.h"
 
-void addNewClient(pClient listStart, pClient newClient)
+void addNewClient(pClient clientList, pClient newClient)
 {
-    if(listStart == NULL)
+    if(clientList == NULL)
     {
         newClient->next = newClient->prev = NULL;
-        listStart = newClient;
+        clientList = newClient;
         return;
     }
     
-    pClient aux = listStart;
+    pClient aux = clientList;
 
     if(aux->next == NULL)
         aux->next = newClient;
@@ -22,34 +22,28 @@ void addNewClient(pClient listStart, pClient newClient)
     }
 }
 
-pClient createNewClient(pid_t client_pid)
+pClient createNewClientPipes(pClient newClient)
 {
-    pClient newClient = calloc(1, sizeof(Client));
-    if(newClient == NULL) {
-        fprintf(stderr, "Error allocating memory for new client\n");
-        return NULL;
-    }
-    
-    newClient->c_PID = client_pid;
-
     char pipe_name[10], pipe_path[50];
 
-    snprintf(pipe_name, 10, PIPE_SV, client_pid);
+    snprintf(pipe_name, 10, PIPE_SV, newClient->c_PID);
     snprintf(pipe_path, 50, "%s/%s", MSGDIST_DIR, pipe_name);
 
-    if(mkfifo(pipe_path, 0600) == -1) //erro de cricao
+    if(mkfifo(pipe_path, 0600) == -1) //erro de criacao
     {
         fprintf(stderr, "Error while creating fifo {%s}\n", pipe_name);
         return NULL;
     }
 
     newClient->c_pipe = open(pipe_path, O_RDWR);
-    if(newClient->c_pipe == -1) { //erro a abrir
+    
+    if(newClient->c_pipe == -1) //erro a abrir
+    {
         fprintf(stderr, "Error while opening fifo {%s}\n", pipe_name);
         return NULL;
     }
 
-    pthread_create(&newClient->c_thread, NULL, awaitClientHandler, (void*) newClient);
+    //pthread_create(&newClient->c_thread, NULL, awaitClientHandler, (void*) newClient); <-- Need to create Function for i-Client Thread
 
     newClient->next = NULL;
     newClient->prev = NULL;

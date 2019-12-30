@@ -47,6 +47,7 @@
       <compileType>
         <cTool>
           <standard>3</standard>
+          <commandLine>-pthread</commandLine>
         </cTool>
       </compileType>
       <item path="../msgdist_defaults.h" ex="false" tool="3" flavor2="0">

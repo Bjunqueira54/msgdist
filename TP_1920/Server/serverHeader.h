@@ -34,6 +34,7 @@ typedef struct client Client, *pClient;
 #include "../topic.h"
 #include "../text.h"
 #include "client.h"
+#include "ServerThreadHandles.h"
 
 #define BADWORDS "badwords.txt"
 
@@ -42,12 +43,13 @@ extern bool Exit, Filter;
 extern pid_t childPID;
 extern pText textList;
 extern pTopic topicList;
+extern pthread_mutex_t client_lock, temp_text_lock;
 
 pid_t initializeVerifier(int* , int *);
 void serverMainLoop(char*);
 bool stringCompare(char *, char *);
 
-void* receiveMsgHandler(void* data);
+void* receiveMsgHandler(void*);
 void sendMsgToVerifier();
 void receiveClientMsg();
 void addNewMessage(pText, pText);
@@ -56,13 +58,13 @@ void addNewTopic(pTopic, pTopic);
 
 void testVerifier(int, int, pText);
 
-void removeExpiredMsg(pText list);
+void removeExpiredMsg(pText);
 
-void listAllTopics(pTopic topicList);
-void listAllUsers(pClient clientList);
-void listAllMesages(pText textList);
-void deleteEmptyTopics(pTopic topicList);
-void killAllClients(pClient clientList);
+void listAllTopics(pTopic);
+void listAllUsers(pClient);
+void listAllMesages(pText);
+void deleteEmptyTopics(pTopic);
+void killAllClients(pClient);
 
 int deleteServerFiles();
 int createServerFiles();
