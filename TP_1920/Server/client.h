@@ -6,6 +6,7 @@ extern "C" {
 #endif
 
 #include "serverHeader.h"
+#include "ServerThreadHandles.h"
 
     struct client
     {

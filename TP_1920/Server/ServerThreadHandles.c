@@ -58,11 +58,60 @@ void* newClientThreadHandle(void* arg)
                 pthread_mutex_unlock(&client_lock);
             }
         }
-        /*else if(select_result == 0)
-        {
-            printf(stdout, "(newClientThread) select fd result: %d\n", select_result);
-        }*/
     }
     
+    ThreadKill(SIGINT);
+}
+
+void* awaitClientHandler(void* data)
+{
+    signal(SIGINT, ThreadKill);
+
+    pClient client = (pClient) data;
+    fd_set fds;
+    struct timeval t;
+
+    while(1)
+    {
+        FD_ZERO(&fds);
+        FD_SET(client->c_pipe, &fds); //colocar o pipe para escuta
+
+        t.tv_sec = 1; //segundos
+        t.tv_usec = 0; //micro-segundos
+
+        if(select(client->c_pipe + 1, &fds, NULL, NULL, &t) > 0) //select positivo - encontrou leitura
+        { 
+            if(FD_ISSET(client->c_pipe, &fds)) //confirmar que select leu do pipe
+            { 
+                pthread_mutex_lock(&temp_text_lock);
+
+		        pText newText = malloc(sizeof(Text)); //alocar memoria para o texto
+                if(newText == NULL)
+                {
+                    fprintf(stderr, "Error while allocating memory for new text\n");
+                    return NULL;
+                }
+
+                int n = 0;
+
+                read(client->c_pipe, newText->title, sizeof(newText->title));
+                read(client->c_pipe, &newText->duration, sizeof(int));
+                n = read(client->c_pipe, newText->article, sizeof(newText->article));
+                //n = read(client->c_pipe, newText->topic, sizeof(newText->topic));
+                if(n > 0)
+                {
+                    pText aux = textList;
+
+                    while (aux->next != NULL) //procutar o fim da lista
+                        aux = aux->next;
+
+                    aux->next = newText;
+                }
+
+                pthread_mutex_unlock(&temp_text_lock);
+            }
+        }
+    }
+
     ThreadKill(SIGINT);
 }

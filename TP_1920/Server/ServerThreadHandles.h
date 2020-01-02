@@ -9,6 +9,7 @@ extern "C" {
 
     void ThreadKill(int);
     void* newClientThreadHandle(void*);
+    void* awaitClientHandler(void* data);
     
 #ifdef __cplusplus
 }

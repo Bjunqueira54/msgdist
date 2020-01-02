@@ -80,41 +80,12 @@ pClient createNewClientPipes(pClient newClient)
         return NULL;
     }
 
-    newClient->c_thread = 0; //TEMPORARY!
-    //pthread_create(&newClient->c_thread, NULL, awaitClientHandler, (void*) newClient); <-- Need to create Function for i-Client Thread
+    pthread_create(&newClient->c_thread, NULL, awaitClientHandler, (void*) newClient);
 
     newClient->next = NULL;
     newClient->prev = NULL;
 
     return newClient;
-}
-
-void* awaitClientHandler(void* data)
-{
-    pClient cli = (pClient) data;
-    fd_set fds;
-    struct timeval t;
-
-    while(1)
-    {
-        FD_ZERO(&fds);
-        FD_SET(cli->c_pipe, &fds); //colocar o pipe para escuta
-        t.tv_sec = 1; //segundos
-        t.tv_usec = 0; //micro segundos
-
-        if(select(cli->c_pipe + 1, &fds, NULL, NULL, &t) > 0) //select positivo -> leu algo
-        {
-            if(FD_ISSET(cli->c_pipe, &fds)) //confirmar que select leu do pipe
-            {
-		pText newText = malloc(sizeof(Text));
-
-                int n = read(cli->c_pipe, newText->title, sizeof(newText->title));
-                
-                if(n > 0)
-                    newText->title[n-1] = '\0';
-            }
-        }
-    }
 }
 
 void removeClient(pClient client)
