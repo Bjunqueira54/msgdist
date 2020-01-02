@@ -99,7 +99,7 @@ int main(int argc, char** argv)
                 else
                 {
                     //How can current_topic_id not be 0 and this be NULL?
-                    //You know what they say: Better safe than SegFault
+                    //You know what they say: Better safe than SegmentationFault
                     if(TopicList == NULL)
                         newMessage(TopicList);
                     else
