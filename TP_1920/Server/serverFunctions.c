@@ -340,8 +340,12 @@ void killAllClients(pClient clientList)
     for(pClient aux = clientList; aux != NULL;)
     {
         sigqueue(aux->c_PID, SIGINT, value);
-        pthread_kill(aux->c_thread, SIGINT);
-        pthread_join(aux->c_thread, NULL);
+        
+        if(aux->c_thread != 0)
+        {
+            pthread_kill(aux->c_thread, SIGINT);
+            pthread_join(aux->c_thread, NULL);
+        }
         
         pClient aux2 = aux;
         aux = aux->next;

@@ -96,8 +96,6 @@ int main(int argc, char** argv)
         fgets(cmd, CMD_SIZE, stdin);
         cmd[strlen(cmd) - 1] = '\0';
         
-        //serverMainLoop(cmd);
-        
         char **parsedCmd = stringParser(cmd);
     
         if(parsedCmd == NULL)

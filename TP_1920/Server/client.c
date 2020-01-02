@@ -28,6 +28,9 @@ pClient createNewClientPipes(pClient newClient)
 {
     char pipe_name[15], pipe_path[50];
     
+    if(newClient->c_PID == 0)
+        return NULL;
+    
     ////////////////////////////
     ///Create FIFO pipe first///
     ////////////////////////////
@@ -77,6 +80,7 @@ pClient createNewClientPipes(pClient newClient)
         return NULL;
     }
 
+    newClient->c_thread = 0; //TEMPORARY!
     //pthread_create(&newClient->c_thread, NULL, awaitClientHandler, (void*) newClient); <-- Need to create Function for i-Client Thread
 
     newClient->next = NULL;

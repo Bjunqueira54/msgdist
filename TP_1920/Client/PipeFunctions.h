@@ -9,6 +9,8 @@ extern "C" {
     
     extern int ServerPipe;
     
+    void createPipes(const char*);
+    
     void SendTextToServer(char*, pText);
     
     void RecieveTopicFromServer();
