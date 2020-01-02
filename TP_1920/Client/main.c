@@ -54,8 +54,10 @@ int main(int argc, char** argv)
     char pid[6]; //server pid string
     char server_main_pipe[25];  //server main pipe path string
     char client_info[MAXUSERLEN + 10] = ""; //client info string
-    char client_main_pipe[15]; //client main pipe name string
+
+    char pipe_name_temp[15]; //temporary string for pipe names
     char client_main_pipe_path[50]; //client main pipe path string
+	char server_main_pipe_path[50]; //server main pipe path string
 
     ///////////
     ///Pipes///
@@ -89,29 +91,35 @@ int main(int argc, char** argv)
     snprintf(client_info, MAXUSERLEN + 10, "%s %d", username, getpid());
     
     write(client_read_pipe, client_info, strlen(client_info));
+
+	///////////////////////
+	///Create Pipe first///
+	///////////////////////
+
+	snprintf(pipe_name_temp, 15, PIPE_CL, self_pid);
+    snprintf(client_main_pipe_path, 50, "%s/%s", MSGDIST_DIR, pipe_name_temp);
+
+    mkfifo(pipe_name_temp, 0600);
     
-    //open Server Write Pipe first.
+	//////////////////////////////////
+    ///open Server Write Pipe first///
+	//////////////////////////////////
+
+	memset(pipe_name_temp, 0, sizeof(char) * 15);
     
-    snprintf(client_main_pipe, 15, PIPE_SV, self_pid);
-    snprintf(client_main_pipe_path, 50, "%s/%s", MSGDIST_DIR, client_main_pipe);
+    snprintf(pipe_name_temp, 15, PIPE_SV, self_pid);
+    snprintf(server_main_pipe_path, 50, "%s/%s", MSGDIST_DIR, pipe_name_temp);
     
-    server_write_pipe = open(client_main_pipe_path, O_WRONLY);
+    server_write_pipe = open(server_main_pipe_path, O_WRONLY);
     
     if(server_write_pipe == -1)
     {
         fprintf(stderr, "Something went wrong\nserver_write_pipe open error: %s\n", strerror(errno));
     }
     
-    //Open Client Read second.
-    //Re-Using Variables client_main_pipe & client_main_pipe_path!
-    
-    memset(client_main_pipe, 0, sizeof(char) * 15);
-    memset(client_main_pipe_path, 0, sizeof(char) * 25);
-    
-    snprintf(client_main_pipe, 15, PIPE_CL, self_pid);
-    snprintf(client_main_pipe_path, 50, "%s/%s", MSGDIST_DIR, client_main_pipe);
-    
-    mkfifo(client_main_pipe_path, 0600);
+	/////////////////////////////
+    ///Open Client Read second///
+	/////////////////////////////
     
     client_read_pipe = open(client_main_pipe_path, O_RDONLY);
     
