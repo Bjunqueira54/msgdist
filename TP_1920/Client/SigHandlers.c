@@ -7,9 +7,6 @@
 //perfect either.
 void SIGINT_Handler(int arg)
 {
-    /*Exit = true;
-    exit (EXIT_SUCCESS);*/
-    
     endwin();
     printf("Server sent a SIGINT\n");
 

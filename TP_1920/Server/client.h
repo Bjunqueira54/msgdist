@@ -20,7 +20,7 @@ extern "C" {
         pClient prev;
     };
     
-    void addNewClient(pClient, pClient);
+    pClient addNewClient(pClient, pClient);
     pClient createNewClientPipes(pClient);
     void removeClient(pClient);
     pClient findClientByUsername(pClient, char*);

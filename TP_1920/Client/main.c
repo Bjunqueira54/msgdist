@@ -57,7 +57,7 @@ int main(int argc, char** argv)
 
     char pipe_name_temp[15]; //temporary string for pipe names
     char client_main_pipe_path[50]; //client main pipe path string
-	char server_main_pipe_path[50]; //server main pipe path string
+    char server_main_pipe_path[50]; //server main pipe path string
 
     ///////////
     ///Pipes///
@@ -92,20 +92,28 @@ int main(int argc, char** argv)
     
     write(client_read_pipe, client_info, strlen(client_info));
 
-	///////////////////////
-	///Create Pipe first///
-	///////////////////////
-
-	snprintf(pipe_name_temp, 15, PIPE_CL, self_pid);
-    snprintf(client_main_pipe_path, 50, "%s/%s", MSGDIST_DIR, pipe_name_temp);
-
-    mkfifo(pipe_name_temp, 0600);
+    //Create and Open Client Pipe first
     
-	//////////////////////////////////
-    ///open Server Write Pipe first///
-	//////////////////////////////////
-
-	memset(pipe_name_temp, 0, sizeof(char) * 15);
+    snprintf(pipe_name_temp, 15, PIPE_CL, self_pid);
+    snprintf(client_main_pipe_path, 50, "%s/%s", MSGDIST_DIR, pipe_name_temp);
+    
+    if(mkfifo(client_main_pipe_path, 0600) == -1) //Creation error
+    {
+        fprintf(stderr, "Error while creating fifo {%s}\n", client_main_pipe_path);
+        getchar();
+        return -1;
+    }
+    
+    client_read_pipe = open(client_main_pipe_path, O_RDONLY);
+    
+    if(client_read_pipe == -1)
+    {
+        fprintf(stderr, "Something went wrong\nclient_read_pipe open error: %s\n", strerror(errno));
+    }
+    
+    //open Server Write Pipe first
+    
+    memset(pipe_name_temp, 0, sizeof(char) * 15);
     
     snprintf(pipe_name_temp, 15, PIPE_SV, self_pid);
     snprintf(server_main_pipe_path, 50, "%s/%s", MSGDIST_DIR, pipe_name_temp);
@@ -115,18 +123,10 @@ int main(int argc, char** argv)
     if(server_write_pipe == -1)
     {
         fprintf(stderr, "Something went wrong\nserver_write_pipe open error: %s\n", strerror(errno));
+        return -1;
     }
     
-	/////////////////////////////
-    ///Open Client Read second///
-	/////////////////////////////
-    
-    client_read_pipe = open(client_main_pipe_path, O_RDONLY);
-    
-    if(client_read_pipe == -1)
-    {
-        fprintf(stderr, "Something went wrong\nclient_read_pipe open error: %s\n", strerror(errno));
-    }
+    getchar();
     
     ///////////////////
     ///Start ncurses///

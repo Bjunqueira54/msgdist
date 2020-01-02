@@ -28,12 +28,6 @@ void clientSignals(int sigNum, siginfo_t *info, void* extras)
     
 }
 
-/*void getClientPid(int sigNum, siginfo_t *info, void* extras)
-{
-    pClient newClient = createNewClient(info->si_pid);
-    addNewClient(clientList, newClient);
-}*/
-
 /* ===== SERVER ===== */
 
 int main(int argc, char** argv)
@@ -91,7 +85,7 @@ int main(int argc, char** argv)
     
     pthread_t newClientThread;
     
-    pthread_create(&newClientThread, NULL, &newClientThreadHandle, (void*) clientList);
+    pthread_create(&newClientThread, NULL, &newClientThreadHandle, NULL);
 
     /* ===== SERVER MAIN LOOP ===== */
 

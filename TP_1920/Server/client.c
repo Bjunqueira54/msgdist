@@ -1,15 +1,15 @@
 #include "client.h"
 
-void addNewClient(pClient clientList, pClient newClient)
+pClient addNewClient(pClient listStart, pClient newClient)
 {
-    if(clientList == NULL)
+    if(listStart == NULL)
     {
         newClient->next = newClient->prev = NULL;
-        clientList = newClient;
-        return;
+        listStart = newClient;
+        return listStart;
     }
     
-    pClient aux = clientList;
+    pClient aux = listStart;
 
     if(aux->next == NULL)
         aux->next = newClient;
@@ -20,13 +20,17 @@ void addNewClient(pClient clientList, pClient newClient)
 
         aux->next = newClient;
     }
+    
+    return listStart;
 }
 
 pClient createNewClientPipes(pClient newClient)
 {
     char pipe_name[15], pipe_path[50];
     
-    //Create and Open server read pipe first.
+    ////////////////////////////
+    ///Create FIFO pipe first///
+    ////////////////////////////
 
     snprintf(pipe_name, 15, PIPE_SV, newClient->c_PID);
     snprintf(pipe_path, 50, "%s/%s", MSGDIST_DIR, pipe_name);
@@ -36,31 +40,40 @@ pClient createNewClientPipes(pClient newClient)
         fprintf(stderr, "Error while creating fifo {%s}\n", pipe_name);
         return NULL;
     }
-
-    newClient->s_pipe = open(pipe_path, O_RDONLY);
     
-    if(newClient->c_pipe == -1) //Opening error
-    {
-        fprintf(stderr, "Error while opening fifo {%s}\n", pipe_name);
-        return NULL;
-    }
+    ////////////////////////////////
+    ///Open Client read pipe next///
+    ////////////////////////////////
     
-    //Create and Open client write pipe second.
-
+    memset(pipe_name, 0, sizeof(char) * 15);
+    memset(pipe_path, 0, sizeof(char) * 50);
+    
     snprintf(pipe_name, 15, PIPE_CL, newClient->c_PID);
     snprintf(pipe_path, 50, "%s/%s", MSGDIST_DIR, pipe_name);
-
-    if(mkfifo(pipe_path, 0600) == -1) //Creation error
-    {
-        fprintf(stderr, "Error while creating fifo {%s}\n", pipe_name);
-        return NULL;
-    }
 
     newClient->c_pipe = open(pipe_path, O_WRONLY);
     
     if(newClient->c_pipe == -1) //Opening error
     {
-        fprintf(stderr, "Error while opening fifo {%s}\n", pipe_name);
+        fprintf(stderr, "Error while opening fifo {%s}\nError: %s\n", pipe_name, strerror(errno));
+        return NULL;
+    }
+    
+    ////////////////////////////////
+    ///Open server read pipe last///
+    ////////////////////////////////
+    
+    memset(pipe_name, 0, sizeof(char) * 15);
+    memset(pipe_path, 0, sizeof(char) * 50);
+
+    snprintf(pipe_name, 15, PIPE_SV, newClient->c_PID);
+    snprintf(pipe_path, 50, "%s/%s", MSGDIST_DIR, pipe_name);
+
+    newClient->s_pipe = open(pipe_path, O_RDONLY);
+    
+    if(newClient->s_pipe == -1) //Opening error
+    {
+        fprintf(stderr, "Error while opening fifo {%s}\nError: %s\n", pipe_name, strerror(errno));
         return NULL;
     }
 

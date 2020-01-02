@@ -43,6 +43,7 @@ extern bool Exit, Filter;
 extern pid_t childPID;
 extern pText textList;
 extern pTopic topicList;
+extern pClient clientList;
 extern pthread_mutex_t client_lock, temp_text_lock;
 
 pid_t initializeVerifier(int* , int *);
