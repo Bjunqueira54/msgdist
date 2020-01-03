@@ -50,10 +50,14 @@ void* newClientThreadHandle(void* arg)
                     
                     strncpy(newClient->username, client_info[0], MAXUSERLEN);
                     sscanf(client_info[1], "%d", &newClient->c_PID);
+                    
+                    newClient = createNewClientPipes(newClient);
+                    clientList = addNewClient(clientList, newClient);
                 }
-                
-                newClient = createNewClientPipes(newClient);
-                clientList = addNewClient(clientList, newClient);
+                else
+                {
+                    free(newClient);
+                }
                 
                 pthread_mutex_unlock(&client_lock);
             }
@@ -71,41 +75,71 @@ void* awaitClientHandler(void* data)
     fd_set fds;
     struct timeval t;
 
-    while(1)
+    while(!Exit)
     {
         FD_ZERO(&fds);
-        FD_SET(client->c_pipe, &fds); //colocar o pipe para escuta
+        FD_SET(client->s_pipe, &fds); //Set pipe into listening mode
 
-        t.tv_sec = 1; //segundos
-        t.tv_usec = 0; //micro-segundos
+        t.tv_sec = 1; //seconds
+        t.tv_usec = 0; //micro-seconds
 
-        if(select(client->c_pipe + 1, &fds, NULL, NULL, &t) > 0) //select positivo - encontrou leitura
+        if(select(client->s_pipe + 1, &fds, NULL, NULL, &t) > 0) //if > 0, something has been read
         { 
-            if(FD_ISSET(client->c_pipe, &fds)) //confirmar que select leu do pipe
+            if(FD_ISSET(client->s_pipe, &fds)) //Confirm that pipe was read
             { 
                 pthread_mutex_lock(&temp_text_lock);
 
-		        pText newText = malloc(sizeof(Text)); //alocar memoria para o texto
+                pText newText = malloc(sizeof(Text)); //Allocate memory dynamically for text
+                
                 if(newText == NULL)
                 {
                     fprintf(stderr, "Error while allocating memory for new text\n");
                     return NULL;
                 }
 
-                int n = 0;
+                int n_title, n_duration, n_article;
+                char c_buffer = 1;
 
-                read(client->c_pipe, newText->title, sizeof(newText->title));
-                read(client->c_pipe, &newText->duration, sizeof(int));
-                n = read(client->c_pipe, newText->article, sizeof(newText->article));
-                //n = read(client->c_pipe, newText->topic, sizeof(newText->topic));
-                if(n > 0)
+                //n_title = read(client->s_pipe, newText->title, sizeof(char) * MAXTITLELEN);
+                for(n_title = 0; c_buffer != '\0' && n_title < MAXTITLELEN; n_title++)
                 {
+                    read(client->s_pipe, &c_buffer , sizeof(char));
+                    newText->title[n_title] = c_buffer;
+                }
+                
+                c_buffer = 1;
+                
+                //n_article = read(client->s_pipe, newText->article, sizeof(char) * MAXTEXTLEN);
+                for(n_article = 0; c_buffer != '\0' && n_article < MAXTEXTLEN; read(client->s_pipe, &c_buffer, sizeof(char)), n_article++)
+                {
+                    read(client->s_pipe, &c_buffer , sizeof(char));
+                    newText->article[n_article] = c_buffer;
+                }
+                
+                n_duration = read(client->s_pipe, &newText->duration, sizeof(int));
+                
+                //n = read(client->s_pipe, newText->topic, sizeof(newText->topic));
+                
+                if(n_title > 0 && n_duration > 0 && n_article > 0)
+                {
+                    if(textList == NULL)
+                    {
+                        textList = newText;
+                        continue;
+                    }
+                    
                     pText aux = textList;
 
-                    while (aux->next != NULL) //procutar o fim da lista
+                    while (aux->next != NULL) //search until the end of the list
                         aux = aux->next;
 
                     aux->next = newText;
+                }
+                else
+                {
+                    free(newText->article);
+                    free(newText->title);
+                    free(newText);
                 }
 
                 pthread_mutex_unlock(&temp_text_lock);

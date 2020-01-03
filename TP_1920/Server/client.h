@@ -14,8 +14,8 @@ extern "C" {
         
         pid_t c_PID;
         pthread_t c_thread;
-        int c_pipe;
-        int s_pipe;
+        int c_pipe; //Client Read - Server Write
+        int s_pipe; //Server Read - Client Write
         
         pClient next;
         pClient prev;
