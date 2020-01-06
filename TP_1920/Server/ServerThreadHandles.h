@@ -8,8 +8,9 @@ extern "C" {
 #include "serverHeader.h"
 
     void ThreadKill(int);
-    void* newClientThreadHandle(void*);
-    void* awaitClientHandler(void* data);
+    void* newClientThreadHandler(void*);
+    void* awaitClientHandler(void*);
+    void* verifyMessagesHandler(void*);
     
 #ifdef __cplusplus
 }

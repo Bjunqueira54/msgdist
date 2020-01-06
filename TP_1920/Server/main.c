@@ -6,7 +6,7 @@ pClient clientList;
 pText textList;
 pTopic topicList;
 
-pthread_mutex_t client_lock, temp_text_lock;
+pthread_mutex_t client_lock, temp_text_lock, topic_lock, text_lock;
 
 void terminateServer(int num)
 {
@@ -43,8 +43,6 @@ int main(int argc, char** argv)
        
     /* ===== LOCAL VARIABLES ===== */
 
-    pTopic topicList;
-    pText textList;
     int maxMessage, maxNot;
     char *wordNot, cmd[CMD_SIZE];
     struct sigaction cSignal, cAlarm;
@@ -80,12 +78,18 @@ int main(int argc, char** argv)
     
     pthread_mutex_init(&client_lock, NULL);
     pthread_mutex_init(&temp_text_lock, NULL);
+    pthread_mutex_init(&topic_lock, NULL);
+    pthread_mutex_init(&text_lock, NULL);
     
     /* ===== THREADS ===== */
     
     pthread_t newClientThread;
+    pthread_t verifyMessageThread;
     
-    pthread_create(&newClientThread, NULL, &newClientThreadHandle, NULL);
+    int pipes_fd[2] = {parent_read_pipe[0], parent_write_pipe[1]};
+    
+    pthread_create(&newClientThread, NULL, &newClientThreadHandler, NULL);
+    pthread_create(&verifyMessageThread, NULL, &verifyMessagesHandler, (void*) pipes_fd);
 
     /* ===== SERVER MAIN LOOP ===== */
 
@@ -124,7 +128,7 @@ int main(int argc, char** argv)
         }
         else if(strcmp(parsedCmd[0], "msg") == 0)
         {
-            listAllMesages(textList);
+            listAllMesages(topicList);
         }
         else if(strcmp(parsedCmd[0], "topics") == 0)
         {
@@ -146,11 +150,11 @@ int main(int argc, char** argv)
         /*else if(strcmp(parsedCmd[0], "addclient") == 0)
         {
             clientList = addTestClient(clientList); //just to test signalling
-        }*/
+        }
         else if(strcmp(parsedCmd[0], "test") == 0)
         {
             testVerifier(parent_write_pipe[1], parent_read_pipe[0], NULL);
-        }
+        }*/
         else
             fprintf(stdout, "Invalid command\n");
     }

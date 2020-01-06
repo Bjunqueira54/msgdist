@@ -44,7 +44,7 @@ extern pid_t childPID;
 extern pText textList;
 extern pTopic topicList;
 extern pClient clientList;
-extern pthread_mutex_t client_lock, temp_text_lock;
+extern pthread_mutex_t client_lock, temp_text_lock, topic_lock, text_lock;
 
 pid_t initializeVerifier(int* , int *);
 void serverMainLoop(char*);
@@ -57,13 +57,13 @@ void addNewMessage(pText, pText);
 int countMsgs(pText);
 void addNewTopic(pTopic, pTopic);
 
-void testVerifier(int, int, pText);
+int sendTextToVerifier(int, int, pText);
 
 void removeExpiredMsg(pText);
 
 void listAllTopics(pTopic);
 void listAllUsers(pClient);
-void listAllMesages(pText);
+void listAllMesages(pTopic);
 void deleteEmptyTopics(pTopic);
 void killAllClients(pClient);
 

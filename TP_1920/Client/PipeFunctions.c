@@ -88,7 +88,5 @@ void SendTextToServer(char* TopicTitle, pText newText)
 {
     //is it really this easy?
     write(server_write_pipe, newText, sizeof(Text));
-    write(server_write_pipe, "\0", sizeof(char));
-    /*write(server_write_pipe, TopicTitle, strlen(TopicTitle));
-    write(server_write_pipe, "\0", sizeof(char));*/
+    write(server_write_pipe, TopicTitle, strlen(TopicTitle));
 }
