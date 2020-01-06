@@ -87,11 +87,7 @@ void createPipes(const char* username)
 void SendTextToServer(char* TopicTitle, pText newText)
 {
     //is it really this easy?
-    write(server_write_pipe, newText->title, strlen(newText->title));
-    write(server_write_pipe, "\0", sizeof(char));
-    write(server_write_pipe, newText->article, strlen(newText->article));
-    write(server_write_pipe, "\0", sizeof(char));
-    write(server_write_pipe, &newText->duration, sizeof(int));
+    write(server_write_pipe, newText, sizeof(Text));
     write(server_write_pipe, "\0", sizeof(char));
     /*write(server_write_pipe, TopicTitle, strlen(TopicTitle));
     write(server_write_pipe, "\0", sizeof(char));*/

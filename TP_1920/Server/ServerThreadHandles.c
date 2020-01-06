@@ -97,30 +97,12 @@ void* awaitClientHandler(void* data)
                     return NULL;
                 }
 
-                int n_title, n_duration, n_article;
-                char c_buffer = 1;
-
-                //n_title = read(client->s_pipe, newText->title, sizeof(char) * MAXTITLELEN);
-                for(n_title = 0; c_buffer != '\0' && n_title < MAXTITLELEN; n_title++)
-                {
-                    read(client->s_pipe, &c_buffer , sizeof(char));
-                    newText->title[n_title] = c_buffer;
-                }
+                int bytes_read;
                 
-                c_buffer = 1;
+                bytes_read = read(client->s_pipe, newText , sizeof(Text));
                 
-                //n_article = read(client->s_pipe, newText->article, sizeof(char) * MAXTEXTLEN);
-                for(n_article = 0; c_buffer != '\0' && n_article < MAXTEXTLEN; read(client->s_pipe, &c_buffer, sizeof(char)), n_article++)
-                {
-                    read(client->s_pipe, &c_buffer , sizeof(char));
-                    newText->article[n_article] = c_buffer;
-                }
                 
-                n_duration = read(client->s_pipe, &newText->duration, sizeof(int));
-                
-                //n = read(client->s_pipe, newText->topic, sizeof(newText->topic));
-                
-                if(n_title > 0 && n_duration > 0 && n_article > 0)
+                if(bytes_read > 0)
                 {
                     if(textList == NULL)
                     {
@@ -136,11 +118,7 @@ void* awaitClientHandler(void* data)
                     aux->next = newText;
                 }
                 else
-                {
-                    free(newText->article);
-                    free(newText->title);
                     free(newText);
-                }
 
                 pthread_mutex_unlock(&temp_text_lock);
             }
