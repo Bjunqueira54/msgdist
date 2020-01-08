@@ -1,7 +1,5 @@
 #include "client.h"
 
-static int subfix = 1;
-
 pClient addNewClient(pClient listStart, pClient newClient)
 {
     
@@ -22,10 +20,20 @@ pClient addNewClient(pClient listStart, pClient newClient)
         aux->next = newClient;
     else
     {
+        int subfix = 1; //1
+        
         while(aux->next != NULL)
         {
             if(strcmp(aux->username, newClient->username) == 0) //test existing name
-                snprintf(newClient->username, MAXUSERLEN, "%s_%d", newClient->username, subfix++);
+            {
+                char newUsername[MAXUSERLEN]; //2
+                strcpy(newUsername, newClient->username); //3
+                memset(newClient->username, 0, MAXUSERLEN); //4
+                snprintf(newClient->username, MAXUSERLEN, "%s%d", newClient->username, subfix);
+                aux = listStart; //5
+                subfix++; //6
+                continue; //7
+            }
 
             aux = aux->next;
         }
@@ -38,7 +46,7 @@ pClient addNewClient(pClient listStart, pClient newClient)
     return listStart;
 }
 
-    pClient createNewClientPipes(pClient newClient)
+pClient createNewClientPipes(pClient newClient)
 {
     char pipe_name[15], pipe_path[50];
     
@@ -94,7 +102,9 @@ pClient addNewClient(pClient listStart, pClient newClient)
         return NULL;
     }
 
+    pthread_mutex_init(&newClient->pipe_lock, NULL);
     pthread_create(&newClient->c_thread, NULL, awaitClientHandler, (void*) newClient);
+    pthread_create(&newClient->KeepAliveThread, NULL, keepAliveThreadHandler, (void*) newClient);
 
     newClient->next = NULL;
     newClient->prev = NULL;
@@ -104,7 +114,7 @@ pClient addNewClient(pClient listStart, pClient newClient)
 
 void removeClient(pClient client)
 {
-    if(client == NULL || (client->next == NULL && client->prev == NULL))
+    if(client == NULL)
         return;
     else
     {
@@ -120,11 +130,21 @@ void removeClient(pClient client)
         else
             Prev = client->prev;
         
-        if(Next == NULL && Prev == NULL) //Something's wrong!
-            return;
+        if(Prev != NULL)
+            Prev->next = Next;
+        if(Next != NULL)
+            Next->prev = Prev;
         
-        Prev->next = Next;
-        Next->prev = Prev;
+        pthread_kill(client->c_thread, SIGINT);
+        pthread_join(client->c_thread, NULL);
+        
+        pthread_kill(client->KeepAliveThread, SIGINT);
+        pthread_join(client->KeepAliveThread, NULL);
+        
+        pthread_mutex_destroy(&client->pipe_lock);
+        
+        close(client->c_pipe);
+        close(client->s_pipe);
         
         free(client);
     }
