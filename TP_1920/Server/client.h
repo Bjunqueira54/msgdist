@@ -27,7 +27,7 @@ extern "C" {
     };
     
     pClient addNewClient(pClient, pClient);
-    pClient createNewClientPipes(pClient);
+    pClient populateClientStruct(pClient);
     void removeClient(pClient);
     pClient findClientByUsername(pClient, char*);
     pClient findClientByPID(pClient, pid_t);

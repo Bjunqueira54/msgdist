@@ -1,7 +1,6 @@
 #include "clientHeader.h"
 
 bool Exit;
-int ServerPipe;
 
 pthread_mutex_t mlock;
 
@@ -43,8 +42,19 @@ int main(int argc, char** argv)
 
     Exit = false;
     pTopic TopicList = NULL;
+    
+    //////////////////////////
+    ///Init signal handling///
+    //////////////////////////
 
-    int current_topic_id = 0;
+    struct sigaction sigUSR1;
+
+    sigUSR1.sa_flags = SA_SIGINFO;
+    sigUSR1.sa_sigaction = &SIGUSR1_Handler;
+    sigaction(SIGUSR1, &sigUSR1, NULL);
+    
+    signal(SIGUSR2, SIGUSR2_Handler);
+    signal(SIGINT, SIGINT_Handler);
 
     ///////////
     ///Pipes///
@@ -55,31 +65,12 @@ int main(int argc, char** argv)
     ///////////////////
     ///Start ncurses///
     ///////////////////
-
-    getchar();
     
     initscr();              //Starts the main ncurses screen 'stdscr'
     start_color();          //Turns terminal colors on
     noecho();               //Turns off character echoing
     curs_set(0);            //Turns off terminal cursor
     keypad(stdscr, true);   //Turns on the keypad
-
-    //////////////////////////
-    ///Init signal handling///
-    //////////////////////////
-
-    struct sigaction sigUSR1, sigUSR2, sigALRM;
-
-    sigUSR1.sa_flags = SA_SIGINFO;
-    sigUSR1.sa_sigaction = &SIGUSR1_Handler;
-    sigaction(SIGUSR1, &sigUSR1, NULL);
-    
-    sigUSR2.sa_flags = SA_SIGINFO;
-    
-    //sigALRM.sa_flags = SA_SIGINFO;
-    //sigALRM.sa_sigaction = &SIGALRM_Handler;
-    
-    signal(SIGINT, SIGINT_Handler);
     
     ////////////////
     ///Mutex Init///

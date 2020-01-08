@@ -9,6 +9,7 @@ void threadKill(int sig_num)
 void* receiveTopicList(void* arg)
 {
     signal(SIGINT, threadKill);
+    signal(SIGUSR2, SIGUSR2_Handler);
 
     pTopic topics = (pTopic) arg;
     fd_set fds;
@@ -17,21 +18,17 @@ void* receiveTopicList(void* arg)
     while(!Exit)
     {
         FD_ZERO(&fds);
-        FD_SET(ServerPipe, &fds);
+        FD_SET(client_read_pipe, &fds);
 
         timeout.tv_sec = 1; //seconds
         timeout.tv_usec = 0; //micro-seconds
 
-        if(select(ServerPipe + 1, &fds, NULL, NULL, &timeout) > 0);
+        if(select(client_read_pipe + 1, &fds, NULL, NULL, &timeout) > 0);
         {
-            if(FD_ISSET(ServerPipe, &fds))
+            if(FD_ISSET(client_read_pipe, &fds))
             {
-                pthread_mutex_lock(&mlock);
-
-                if(read(ServerPipe, topics, sizeof(pTopic)) == 0);
+                if(read(client_read_pipe, topics, sizeof(pTopic)) == 0);
                     topics = NULL;
-
-                pthread_mutex_unlock(&mlock);
             }
         }
     }
@@ -41,6 +38,7 @@ void* receiveTopicList(void* arg)
 void* UserInputThreadHandler(void* arg)
 {
     signal(SIGINT, threadKill);
+    signal(SIGUSR2, SIGUSR2_Handler);
     
     pTopic TopicList = (pTopic) arg;
     int current_topic_id;

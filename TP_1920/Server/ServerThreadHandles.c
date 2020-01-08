@@ -50,7 +50,7 @@ void* newClientThreadHandler(void* arg)
                     strncpy(newClient->username, client_info[0], MAXUSERLEN);
                     sscanf(client_info[1], "%d", &newClient->c_PID);
                     
-                    newClient = createNewClientPipes(newClient);
+                    newClient = populateClientStruct(newClient);
                     clientList = addNewClient(clientList, newClient);
                 }
                 else
@@ -62,7 +62,7 @@ void* newClientThreadHandler(void* arg)
     ThreadKill(SIGINT);
 }
 
-void* awaitClientHandler(void* arg)
+void* newMessageThreadHandler(void* arg)
 {
     signal(SIGINT, ThreadKill);
 
@@ -78,8 +78,9 @@ void* awaitClientHandler(void* arg)
         t.tv_sec = 1; //seconds
         t.tv_usec = 0; //micro-seconds
 
+        pthread_mutex_lock(&client->pipe_lock);
         if(select(client->s_pipe + 1, &fds, NULL, NULL, &t) > 0) //if > 0, something has been read
-        { 
+        {
             if(FD_ISSET(client->s_pipe, &fds)) //Confirm that pipe was read
             {
                 pText newText = malloc(sizeof(Text)); //Allocate memory dynamically for text
@@ -102,6 +103,7 @@ void* awaitClientHandler(void* arg)
                     
                     if(bytes_read > 0)
                     {
+                        pthread_mutex_unlock(&client->pipe_lock);
                         newText->topic = malloc(sizeof(Topic));
                         
                         if(newText->topic == NULL)
@@ -134,6 +136,8 @@ void* awaitClientHandler(void* arg)
                     free(newText);
             }
         }
+        else
+            pthread_mutex_unlock(&client->pipe_lock);
     }
 
     ThreadKill(SIGINT);
@@ -286,12 +290,19 @@ void* keepAliveThreadHandler(void* arg)
     struct timeval t;
     int timeout = 0;
     
+    kill(client->c_PID, SIGUSR2);
+    
     while(!Exit)
     {
+        pthread_mutex_lock(&client->pipe_lock);
+        
         if(timeout >= 10) //Client timed out
         {
             removeClient(client);
+            return ((void*) NULL); //Just in Case
         }
+        
+        timeout++;
         
         FD_ZERO(&fds);
         FD_SET(client->s_pipe, &fds); //Set pipe into listening mode
@@ -303,11 +314,25 @@ void* keepAliveThreadHandler(void* arg)
         { 
             if(FD_ISSET(client->s_pipe, &fds)) //Confirm that pipe was read
             {
+                char kab; //Keep Alive Buffer
+                int bytes_read = read(client->s_pipe, &kab, sizeof(char)); //I don't care what was read
+                pthread_mutex_unlock(&client->pipe_lock);
                 
+                if(bytes_read > 0) //all good!
+                {
+                    timeout = 0;
+                    sleep(10);
+                    kill(client->c_PID, SIGUSR2);
+                }
+                else
+                {
+                    removeClient(client);
+                    return ((void*) NULL); //Just in Case
+                }
             }
         }
-        
-        sleep(10);
+        else
+            pthread_mutex_unlock(&client->pipe_lock);
     }
     
     ThreadKill(SIGINT);

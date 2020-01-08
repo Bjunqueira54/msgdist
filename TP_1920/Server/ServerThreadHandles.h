@@ -9,7 +9,7 @@ extern "C" {
 
     void ThreadKill(int);
     void* newClientThreadHandler(void*);
-    void* awaitClientHandler(void*);
+    void* newMessageThreadHandler(void*);
     void* verifyMessagesHandler(void*);
     
     void* keepAliveThreadHandler(void*);
