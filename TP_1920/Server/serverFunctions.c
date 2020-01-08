@@ -254,8 +254,10 @@ void addNewTopic(pTopic first, pTopic newTopic)
 
 void listAllUsers(pClient clientList)
 {
-    if(clientList == NULL)
+    if(clientList == NULL) {
+        printf("No users");
         return;
+    }
     
     printf("\nCurrently Connected Users:\n");
     
@@ -339,7 +341,7 @@ void killAllClients(pClient clientList)
     
     for(pClient aux = clientList; aux != NULL;)
     {
-        sigqueue(aux->c_PID, SIGINT, value);
+        kill(aux->c_PID, SIGINT);
         
         if(aux->c_thread != 0)
         {

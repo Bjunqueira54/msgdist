@@ -55,6 +55,7 @@ int main(int argc, char** argv)
     
     signal(SIGUSR2, SIGUSR2_Handler);
     signal(SIGINT, SIGINT_Handler);
+    int current_topic_id = 0;
 
     ///////////
     ///Pipes///
@@ -82,24 +83,82 @@ int main(int argc, char** argv)
     ///Thread Start///
     //////////////////
 
-    pthread_t serverReadThread, userInputThread;
+    pthread_t serverReadThread;
     
-    pthread_create(&userInputThread, NULL, &UserInputThreadHandler, TopicList);
     pthread_create(&serverReadThread, NULL, &receiveTopicList, TopicList);
     
     drawBox(stdscr);
     mvwaddstr(stdscr, 1, 1, "Welcome to MSGDIST!");
     wrefresh(stdscr);
     
-    while(!Exit) { sleep(1); }
+    do
+    {
+        PrintMenu(TopicList);
+        
+        switch(tolower(getch()))
+        {
+        case 'n':
+            if(current_topic_id == 0)
+                newMessage(TopicList);
+            else
+            {
+                //How can current_topic_id not be 0 and this be NULL?
+                //You know what they say: Better safe than SegmentationFault
+                if(TopicList == NULL)
+                    newMessage(TopicList);
+                else
+                {
+                    pTopic aux = TopicList;
+
+                    while(aux != NULL)
+                    {
+                        if(aux->id == current_topic_id)
+                            newTopicMessage(aux->title);
+                    }
+                }
+            }
+            break;
+        case KEY_UP:
+            clear();
+            mvwaddstr(stdscr, 5, 5, "I pressed Arrow Up");
+            refresh();
+            break;
+        case KEY_DOWN:
+            clear();
+            mvwaddstr(stdscr, 5, 5, "I pressed Arrow Down");
+            refresh();
+            break;
+        case KEY_RIGHT: //KEY_RIGHT and KEY_LEFT aren't used right now
+            clear();
+            mvwaddstr(stdscr, 5, 5, "I pressed Arrow Right");
+            refresh();
+            break;
+        case KEY_LEFT:  //but it won't hurt to have them here just in case.
+            clear();
+            mvwaddstr(stdscr, 5, 5, "I pressed Arrow Left");
+            refresh();
+            break;
+        case 10:
+            clear();
+            mvwaddstr(stdscr, 5, 5, "I pressed enter");
+            refresh();
+            break;
+        case 27:
+            Exit = true;
+            break;
+        default:
+            break;
+        }   
+        
+        refresh();
+    } while(!Exit);
     
     pthread_kill(serverReadThread, SIGINT);
     pthread_join(serverReadThread, NULL);
     
-    pthread_kill(userInputThread, SIGINT);
-    pthread_join(userInputThread, NULL);
-    
     endwin();
+    
+    printf("Client will shutdown\n");
     
     return (EXIT_SUCCESS);
 }
