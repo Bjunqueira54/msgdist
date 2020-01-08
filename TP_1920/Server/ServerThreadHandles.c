@@ -39,8 +39,6 @@ void* newClientThreadHandler(void* arg)
         {
             if(FD_ISSET(pipe_fd, &fds))
             {
-                pthread_mutex_lock(&client_lock);
-                
                 pClient newClient = malloc(sizeof(Client));
                 
                 int n = read(pipe_fd, buffer, sizeof(char) * 50);
@@ -56,11 +54,7 @@ void* newClientThreadHandler(void* arg)
                     clientList = addNewClient(clientList, newClient);
                 }
                 else
-                {
                     free(newClient);
-                }
-                
-                pthread_mutex_unlock(&client_lock);
             }
         }
     }

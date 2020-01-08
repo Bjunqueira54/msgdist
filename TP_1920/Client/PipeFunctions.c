@@ -72,6 +72,8 @@ void createPipes(const char* username)
     
     memset(pipe_name_temp, 0, sizeof(char) * 15);
     
+    //usleep(1000); //sleep for 1ms to make sure the pipe is created by the server.
+    
     snprintf(pipe_name_temp, 15, PIPE_SV, self_pid);
     snprintf(server_main_pipe_path, 50, "%s/%s", MSGDIST_DIR, pipe_name_temp);
     

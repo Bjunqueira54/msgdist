@@ -7,10 +7,8 @@
 //perfect either.
 void SIGINT_Handler(int arg)
 {
-    endwin();
+    Exit = true;
     printf("Server sent a SIGINT\n");
-
-    exit (EXIT_SUCCESS);
 }
 
 void SIGUSR1_Handler(int signal, siginfo_t* info, void* extra) //Client
