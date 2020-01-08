@@ -1,7 +1,5 @@
 #include "ThreadHandlers.h"
 
-// pthread_mutex_t topicLock;
-
 void threadKill(int sig_num)
 {
     pthread_exit((void*) NULL);
