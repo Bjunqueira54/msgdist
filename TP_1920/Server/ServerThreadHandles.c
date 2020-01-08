@@ -31,8 +31,8 @@ void* newClientThreadHandler(void* arg)
         FD_ZERO(&fds);
         FD_SET(pipe_fd, &fds);
         
-        timeout.tv_sec = 1; //seconds
-        timeout.tv_usec = 0; //microseconds
+        timeout.tv_sec = 0; //seconds
+        timeout.tv_usec = 2500; //microseconds
         
         select_result = select(pipe_fd + 1, &fds, NULL, NULL, &timeout);
         if(select_result > 0)
