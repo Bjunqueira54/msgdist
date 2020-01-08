@@ -52,6 +52,7 @@ bool stringCompare(char *, char *);
 
 /* SIGNAL HANDLERS */
 void SIGUSR1_Handler(int sigNum, siginfo_t* info, void* extra);
+void SIGALRM_Handler(int sigNum, siginfo_t* info, void* extra);
 
 void* receiveMsgHandler(void*);
 void sendMsgToVerifier();

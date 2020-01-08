@@ -76,7 +76,8 @@ int main(int argc, char** argv)
     sigUSR2.sa_flags = SA_SIGINFO;
     
     sigALRM.sa_flags = SA_SIGINFO;
-    //sigALRM.sa_sigaction = &SIGALRM_Handler;
+    sigALRM.sa_sigaction = &SIGALRM_Handler;
+    sigaction(SIGALRM, &sigALRM, NULL);
     
     signal(SIGINT, SIGINT_Handler);
     

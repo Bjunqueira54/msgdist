@@ -13,7 +13,7 @@ void SIGINT_Handler(int arg)
     exit (EXIT_SUCCESS);
 }
 
-void SIGUSR1_Handler(int signal, siginfo_t* info, void* extra)
+void SIGUSR1_Handler(int signal, siginfo_t* info, void* extra) //Client
 {
     pText text;
 
@@ -22,7 +22,7 @@ void SIGUSR1_Handler(int signal, siginfo_t* info, void* extra)
     //continue
 }
 
-void SIGALRM_Handler(int signal, siginfo_t* info, void* extra)
+void SIGALRM_Handler(int signal, siginfo_t* info, void* extra) //Client
 {
     
 }

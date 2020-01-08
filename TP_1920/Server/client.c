@@ -1,5 +1,7 @@
 #include "client.h"
 
+static int subfix = 1;
+
 pClient addNewClient(pClient listStart, pClient newClient)
 {
     if(listStart == NULL)
@@ -16,7 +18,12 @@ pClient addNewClient(pClient listStart, pClient newClient)
     else
     {
         while(aux->next != NULL)
+        {
+            if(strcmp(aux->username, newClient->username) == 0) //test existing name
+                snprintf(newClient->username, MAXUSERLEN, "%s_%d", newClient->username, subfix++);
+
             aux = aux->next;
+        }
 
         aux->next = newClient;
     }
