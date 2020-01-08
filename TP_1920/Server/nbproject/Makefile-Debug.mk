@@ -15,8 +15,8 @@ NM=nm
 CCADMIN=CCadmin
 RANLIB=ranlib
 CC=gcc
-CCC=g++
-CXX=g++
+CCC=gcc
+CXX=gcc
 FC=gfortran
 AS=as
 
@@ -36,6 +36,7 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 # Object Files
 OBJECTFILES= \
 	${OBJECTDIR}/ServerThreadHandles.o \
+	${OBJECTDIR}/SigHandlers.o \
 	${OBJECTDIR}/client.o \
 	${OBJECTDIR}/main.o \
 	${OBJECTDIR}/serverFunctions.o
@@ -69,6 +70,11 @@ ${OBJECTDIR}/ServerThreadHandles.o: ServerThreadHandles.c
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.c) -g -std=c99 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/ServerThreadHandles.o ServerThreadHandles.c
+
+${OBJECTDIR}/SigHandlers.o: SigHandlers.c
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.c) -g -std=c99 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/SigHandlers.o SigHandlers.c
 
 ${OBJECTDIR}/client.o: client.c
 	${MKDIR} -p ${OBJECTDIR}

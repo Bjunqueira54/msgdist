@@ -25,7 +25,7 @@ pClient addNewClient(pClient listStart, pClient newClient)
         while(aux->next != NULL)
         {
             if(strcmp(aux->username, newClient->username) == 0) //test existing name
-                snprintf(newClient->username, MAXUSERLEN, "%s_%d", newClient->username, subfix++);
+                snprintf(newClient->username, MAXTEXTLEN-1, "%s%d", newClient->username, subfix++);
 
             aux = aux->next;
         }

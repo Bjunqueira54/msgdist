@@ -26,12 +26,12 @@ void* receiveTopicList(void* arg)
         {
             if(FD_ISSET(ServerPipe, &fds))
             {
-                pthread_mutex_lock(&topicLock);
+                pthread_mutex_lock(&mlock);
 
                 if(read(ServerPipe, topics, sizeof(pTopic)) == 0);
                     topics = NULL;
 
-                pthread_mutex_unlock(&topicLock);
+                pthread_mutex_unlock(&mlock);
             }
         }
     }

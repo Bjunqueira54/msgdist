@@ -35,6 +35,7 @@ typedef struct client Client, *pClient;
 #include "../text.h"
 #include "client.h"
 #include "ServerThreadHandles.h"
+#include "SigHandlers.h"
 
 #define BADWORDS "badwords.txt"
 
@@ -49,10 +50,6 @@ extern pthread_mutex_t client_lock, temp_text_lock, topic_lock, text_lock;
 pid_t initializeVerifier(int* , int *);
 void serverMainLoop(char*);
 bool stringCompare(char *, char *);
-
-/* SIGNAL HANDLERS */
-void SIGUSR1_Handler(int sigNum, siginfo_t* info, void* extra);
-void SIGALRM_Handler(int sigNum, siginfo_t* info, void* extra);
 
 void* receiveMsgHandler(void*);
 void sendMsgToVerifier();
