@@ -9,8 +9,6 @@ void createPipes(const char* username)
     pid_t self_pid = getpid();
     
     int serverpidfd;
-    /*int client_read_pipe;
-    int server_write_pipe;*/
     
     char pid[6]; //server pid string
     char server_main_pipe[25];  //server main pipe path string
@@ -48,6 +46,8 @@ void createPipes(const char* username)
     snprintf(client_info, MAXUSERLEN + 10, "%s %d", username, getpid());
     
     write(client_read_pipe, client_info, strlen(client_info));
+    
+    close(client_read_pipe); //close this server main pipe to save up on File Descriptors;
 
     //Create and Open Client Pipe first
     
@@ -87,12 +87,6 @@ void createPipes(const char* username)
 void SendTextToServer(char* TopicTitle, pText newText)
 {
     //is it really this easy?
-    write(client_read_pipe, newText->title, strlen(newText->title));
-    write(client_read_pipe, "\0", sizeof(char));
-    write(client_read_pipe, &newText->duration, sizeof(int));
-    write(client_read_pipe, "\0", sizeof(char));
-    write(client_read_pipe, newText->article, strlen(newText->article));
-    write(client_read_pipe, "\0", sizeof(char));
-    /*write(client_read_pipe, TopicTitle, strlen(TopicTitle));
-    write(client_read_pipe, "\0", sizeof(char));*/
+    write(server_write_pipe, newText, sizeof(Text));
+    write(server_write_pipe, TopicTitle, strlen(TopicTitle));
 }

@@ -11,7 +11,7 @@ pid_t initializeVerifier(int *parent_to_child, int *child_to_parent)
     
     if(child_pid == 0) // Child
     { 
-        /* Fechar estremidades nao usadas */
+        /* Close unused ends */
         close(child_to_parent[0]);
         close(parent_to_child[1]);
         
@@ -263,30 +263,30 @@ void listAllUsers(pClient clientList)
     
     do
     {
-        printf("%d\n", aux->c_PID);
+        printf("User: %s - PID: %d\n", aux->username, aux->c_PID);
         aux = aux->next;
     }
     while(aux != NULL);
 }
 
-void listAllMesages(pText list)
+void listAllMesages(pTopic list)
 {
     if(list == NULL)
     {
         printf("There are no messages on the server\n");
         return;
     }
- 
-    pText aux = list;
-
     printf("\nAll Messages on the server:\n");
 
-    do
+    pthread_mutex_lock(&topic_lock);
+    for(pTopic topic_run = list; topic_run != NULL; topic_run = topic_run->next)
     {
-        printf("%s\n", aux->title);
-        aux = aux->next;
+        for(pText text_run = topic_run->TextStart; text_run != NULL; text_run = text_run->next)
+        {
+            fprintf(stdout, "%s (%s)\n", text_run->title, topic_run->title);
+        }
     }
-    while(aux != NULL);
+    pthread_mutex_unlock(&topic_lock);
 }
 
 void listAllTopics(pTopic list)
@@ -407,22 +407,13 @@ int deleteServerFiles()
     return 0; 
 }
 
-void testVerifier(int parent_write_pipe, int parent_read_pipe, pText newText)
+int sendTextToVerifier(int parent_read_pipe, int parent_write_pipe, pText newText)
 {
-    system("clear");
+    char aux[MAXTEXTLEN + 12]; //MAXTEXTLEN + ##MSGEND## + \n + \0
+    strcpy(aux, newText->article);
+    strncat(aux, " ##MSGEND##\n", sizeof(char) * 12);
     
-    printf("Write a message to send to the verifier (no need to write ##MSGEND##)\n");
-    printf("Message: ");
-    
-    char test_message[1000];
-    
-    fgets(test_message, (1000 - 12), stdin); //1000 - 12 because I need to strcat " ##MSGEND##\n" to it
-    
-    test_message[strlen(test_message) - 1] = '\0';
-    
-    strncat(test_message, " ##MSGEND##\n", sizeof(char) * 12);
-    
-    write(parent_write_pipe, test_message, strlen(test_message));
+    write(parent_write_pipe, aux, strlen(aux));
     
     char verifier_response[5];
     char verifier_char;
@@ -440,5 +431,5 @@ void testVerifier(int parent_write_pipe, int parent_read_pipe, pText newText)
     
     verifier_response[i] = '\0';
     
-    printf("Number of wrong words: %s", verifier_response);
+    return atol(verifier_response);
 }
