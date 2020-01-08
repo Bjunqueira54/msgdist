@@ -42,7 +42,8 @@ int main(int argc, char** argv)
 
     Exit = false;
     pTopic TopicList = NULL;
-    
+    int current_topic_id = 0;
+
     //////////////////////////
     ///Init signal handling///
     //////////////////////////
@@ -55,7 +56,6 @@ int main(int argc, char** argv)
     
     signal(SIGUSR2, SIGUSR2_Handler);
     signal(SIGINT, SIGINT_Handler);
-    int current_topic_id = 0;
 
     ///////////
     ///Pipes///

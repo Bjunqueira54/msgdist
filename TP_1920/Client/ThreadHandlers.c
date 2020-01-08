@@ -3,7 +3,6 @@
 void threadKill(int sig_num)
 {
     Exit = true;
-    //kill(getpid(), SIGINT);
 }
 
 void* receiveTopicList(void* arg)
