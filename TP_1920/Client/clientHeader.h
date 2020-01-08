@@ -39,7 +39,7 @@ extern "C" {
     extern int client_read_pipe;
     extern int server_write_pipe;
 
-    extern pthread_mutex_t topicLock;
+    extern pthread_mutex_t mlock;
 
 #ifdef __cplusplus
 }

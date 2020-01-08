@@ -13,7 +13,12 @@ extern "C" {
         char username[MAXUSERLEN];
         
         pid_t c_PID;
+        
         pthread_t c_thread;
+        pthread_t KeepAliveThread;
+        
+        pthread_mutex_t pipe_lock;
+        
         int c_pipe; //Client Read - Server Write
         int s_pipe; //Server Read - Client Write
         

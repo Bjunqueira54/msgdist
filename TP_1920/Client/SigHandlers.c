@@ -22,5 +22,8 @@ void SIGUSR1_Handler(int signal, siginfo_t* info, void* extra) //Client
 
 void SIGALRM_Handler(int signal, siginfo_t* info, void* extra) //Client
 {
-    
+    char c = 'A';
+    pthread_mutex_lock(&mlock);
+    write(ServerPipe, &c, sizeof(char));
+    pthread_mutex_unlock(&mlock);
 }

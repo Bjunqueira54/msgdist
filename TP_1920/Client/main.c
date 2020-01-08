@@ -3,7 +3,7 @@
 bool Exit;
 int ServerPipe;
 
-pthread_mutex_t topicLock;
+pthread_mutex_t mlock;
 
 //Client
 int main(int argc, char** argv)
@@ -85,7 +85,7 @@ int main(int argc, char** argv)
     ///Mutex Init///
     ////////////////
 
-    pthread_mutex_init(&topicLock, NULL);
+    pthread_mutex_init(&mlock, NULL);
 
     //////////////////
     ///Thread Start///

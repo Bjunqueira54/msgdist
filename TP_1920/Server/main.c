@@ -59,9 +59,9 @@ int main(int argc, char** argv)
     cSignal.sa_sigaction = &clientSignals;
     sigaction(SIGUSR1, &cSignal, NULL);*/
     
-    cAlarm.sa_flags = SA_SIGINFO;
+    /*cAlarm.sa_flags = SA_SIGINFO;
     cAlarm.sa_sigaction = &SIGALRM_Handler;
-    sigaction(SIGALRM, &cAlarm, NULL);
+    sigaction(SIGALRM, &cAlarm, NULL);*/
     
     /* ===== ENV VARS ===== */
 

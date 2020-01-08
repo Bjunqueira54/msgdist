@@ -62,11 +62,11 @@ void* newClientThreadHandler(void* arg)
     ThreadKill(SIGINT);
 }
 
-void* awaitClientHandler(void* data)
+void* awaitClientHandler(void* arg)
 {
     signal(SIGINT, ThreadKill);
 
-    pClient client = (pClient) data;
+    pClient client = (pClient) arg;
     fd_set fds;
     struct timeval t;
 
@@ -267,4 +267,48 @@ int searchForTopic(const char* TopicTitle)
     }
     
     return -1;
+}
+
+void* keepAliveThreadHandler(void* arg)
+{
+    signal(SIGINT, ThreadKill);
+    
+    pClient client = (pClient) arg;
+    
+    //How?
+    if(client == NULL)
+    {
+        ThreadKill(SIGINT);
+        return ((void*) NULL);
+    }
+    
+    fd_set fds;
+    struct timeval t;
+    int timeout = 0;
+    
+    while(!Exit)
+    {
+        if(timeout >= 10) //Client timed out
+        {
+            removeClient(client);
+        }
+        
+        FD_ZERO(&fds);
+        FD_SET(client->s_pipe, &fds); //Set pipe into listening mode
+        
+        t.tv_sec = 1; //seconds
+        t.tv_usec = 0; //micro-seconds
+        
+        if(select(client->s_pipe + 1, &fds, NULL, NULL, &t) > 0) //if > 0, something has been read
+        { 
+            if(FD_ISSET(client->s_pipe, &fds)) //Confirm that pipe was read
+            {
+                
+            }
+        }
+        
+        sleep(10);
+    }
+    
+    ThreadKill(SIGINT);
 }

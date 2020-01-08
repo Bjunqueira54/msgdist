@@ -12,6 +12,8 @@ extern "C" {
     void* awaitClientHandler(void*);
     void* verifyMessagesHandler(void*);
     
+    void* keepAliveThreadHandler(void*);
+    
 #ifdef __cplusplus
 }
 #endif
