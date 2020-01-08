@@ -2,6 +2,7 @@
 
 void threadKill(int sig_num)
 {
+    Exit = true;
     pthread_exit((void*) NULL);
 }
 

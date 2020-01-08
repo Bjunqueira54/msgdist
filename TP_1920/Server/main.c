@@ -197,6 +197,7 @@ int main(int argc, char** argv)
     kill(childPID, SIGUSR2);
     
     pthread_join(newClientThread, NULL);
+    pthread_join(verifyMessageThread, NULL);
     
     pthread_mutex_destroy(&client_lock);
     pthread_mutex_destroy(&temp_text_lock);

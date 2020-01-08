@@ -1,6 +1,7 @@
 #include "clientHeader.h"
 
 bool Exit;
+pthread_t notification_thread, serverReadThread;
 int ServerPipe;
 
 pthread_mutex_t topicLock;
@@ -41,7 +42,6 @@ int main(int argc, char** argv)
     ///Init all variables///
     ////////////////////////
 
-    pthread_t notification_thread, serverReadThread;
     Exit = false;
     pTopic TopicList = NULL;
 
@@ -96,11 +96,13 @@ int main(int argc, char** argv)
     mvwaddstr(stdscr, 1, 1, "Welcome to MSGDIST!");
     wrefresh(stdscr);
     
-    while(!Exit)
+    while(Exit != true)
     {
         PrintMenu(TopicList);
         
-        switch(tolower(getch()))
+        char option = tolower(getch());
+        
+        switch(option)
         {
             case 'n':
             {
@@ -157,6 +159,9 @@ int main(int argc, char** argv)
                 break;
         }
     }
+    
+    pthread_kill(serverReadThread, SIGINT);
+    pthread_join(serverReadThread, NULL);
     
     endwin();
     

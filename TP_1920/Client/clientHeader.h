@@ -36,6 +36,7 @@ extern "C" {
 #include "PipeFunctions.h"
 
     extern bool Exit;
+    extern pthread_t notification_thread, serverReadThread;
     extern int client_read_pipe;
     extern int server_write_pipe;
 
