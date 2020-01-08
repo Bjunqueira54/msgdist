@@ -103,6 +103,7 @@ void* UserInputThreadHandler(void* arg)
                 break;
             case 27:
                 Exit = true;
+                threadKill(SIGINT);
                 break;
             default:
                 break;

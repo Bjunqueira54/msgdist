@@ -81,6 +81,10 @@ pClient populateClientStruct(pClient newClient)
     if(newClient->c_pipe == -1) //Opening error
     {
         fprintf(stderr, "Error while opening Server fifo {%s}\nError: %s\n", pipe_name, strerror(errno));
+        kill(SIGKILL, newClient->c_PID);
+        
+        free(newClient);
+        
         return NULL;
     }
     
@@ -103,8 +107,8 @@ pClient populateClientStruct(pClient newClient)
     }
 
     pthread_mutex_init(&newClient->pipe_lock, NULL);
-    pthread_create(&newClient->c_thread, NULL, newMessageThreadHandler, (void*) newClient);
     pthread_create(&newClient->KeepAliveThread, NULL, keepAliveThreadHandler, (void*) newClient);
+    pthread_create(&newClient->c_thread, NULL, newMessageThreadHandler, (void*) newClient);
 
     newClient->next = NULL;
     newClient->prev = NULL;

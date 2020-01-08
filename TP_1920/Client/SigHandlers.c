@@ -20,10 +20,11 @@ void SIGUSR1_Handler(int signal, siginfo_t* info, void* extra) //Client
     //continue
 }
 
-void SIGUSR2_Handler(int signal/*, siginfo_t* info, void* extra*/) //Client
+void SIGUSR2_Handler(int signal) //Client
 {
     char c = 'A';
     pthread_mutex_lock(&mlock);
     write(server_write_pipe, &c, sizeof(char));
+    sleep(1);
     pthread_mutex_unlock(&mlock);
 }

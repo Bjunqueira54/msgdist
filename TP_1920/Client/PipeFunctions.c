@@ -93,6 +93,6 @@ void SendTextToServer(char* TopicTitle, pText newText)
     
     write(server_write_pipe, newText, sizeof(Text));
     write(server_write_pipe, TopicTitle, strlen(TopicTitle));
-    
+    sleep(1);
     pthread_mutex_unlock(&mlock);
 }
