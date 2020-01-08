@@ -28,6 +28,34 @@ void clientSignals(int sigNum, siginfo_t *info, void* extras)
     
 }
 
+void SIGUSR1_Handler(int sigNum, siginfo_t* info, void* extra)
+{
+    union sigval val = (union sigval) extra;
+    sigqueue(info->si_pid, SIGUSR1, val); //nao da para mandar null?
+
+    //Find client pipe
+    pClient aux_c = clientList;
+
+    while(aux_c->next != NULL)
+    {
+        if(aux_c->c_PID == info->si_pid)
+            break;
+        aux_c = aux_c->next;
+    }
+
+    //Find text list
+    pTopic aux_t = topicList;
+
+    while(aux_t->next != NULL)
+    {
+        if(aux_t->id == val.sival_int)
+            break;
+        aux_t = aux_t->next;
+    }
+
+    write(aux_c->s_pipe, aux_t->TextStart, sizeof(pText));
+}
+
 /* ===== SERVER ===== */
 
 int main(int argc, char** argv)
@@ -47,15 +75,19 @@ int main(int argc, char** argv)
     pText textList;
     int maxMessage, maxNot;
     char *wordNot, cmd[CMD_SIZE];
-    struct sigaction cSignal, cAlarm;
+    struct sigaction cAlarm, cUSR1;
     
     /* ===== SIGNAL HANDLING ===== */
 
     signal(SIGINT, terminateServer);
     
-    cSignal.sa_flags = SA_SIGINFO;
+    cUSR1.sa_flags = SA_SIGINFO;
+    cUSR1.sa_sigaction = &SIGUSR1_Handler;
+    sigaction(SIGUSR1, &cUSR1, NULL);
+
+    /*cSignal.sa_flags = SA_SIGINFO;
     cSignal.sa_sigaction = &clientSignals;
-    sigaction(SIGUSR1, &cSignal, NULL);
+    sigaction(SIGUSR1, &cSignal, NULL);*/
     
     /*cAlarm.sa_flags = SA_SIGINFO;
     cAlarm.sa_sigaction = &getClientPid;

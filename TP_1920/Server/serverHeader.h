@@ -50,6 +50,9 @@ pid_t initializeVerifier(int* , int *);
 void serverMainLoop(char*);
 bool stringCompare(char *, char *);
 
+/* SIGNAL HANDLERS */
+void SIGUSR1_Handler(int sigNum, siginfo_t* info, void* extra);
+
 void* receiveMsgHandler(void*);
 void sendMsgToVerifier();
 void receiveClientMsg();

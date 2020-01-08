@@ -3,6 +3,8 @@
 bool Exit;
 int ServerPipe;
 
+pthread_mutex_t topicLock;
+
 //Client
 int main(int argc, char** argv)
 {
@@ -39,7 +41,7 @@ int main(int argc, char** argv)
     ///Init all variables///
     ////////////////////////
 
-    pthread_t notification_thread;
+    pthread_t notification_thread, serverReadThread;
     Exit = false;
     pTopic TopicList = NULL;
 
@@ -64,10 +66,12 @@ int main(int argc, char** argv)
     //////////////////////////
     ///Init signal handling///
     //////////////////////////
-    
+
     struct sigaction sigUSR1, sigUSR2, sigALRM;
-    
+
     sigUSR1.sa_flags = SA_SIGINFO;
+    sigUSR1.sa_sigaction = &SIGUSR1_Handler;
+    sigaction(SIGUSR1, &sigUSR1, NULL);
     
     sigUSR2.sa_flags = SA_SIGINFO;
     
@@ -76,9 +80,17 @@ int main(int argc, char** argv)
     
     signal(SIGINT, SIGINT_Handler);
     
+    ////////////////
+    ///Mutex Init///
+    ////////////////
+
+    pthread_mutex_init(&topicLock, NULL);
+
     //////////////////
     ///Thread Start///
     //////////////////
+
+    pthread_create(&serverReadThread, NULL, &receiveTopicList, TopicList);
     
     drawBox(stdscr);
     mvwaddstr(stdscr, 1, 1, "Welcome to MSGDIST!");

@@ -13,6 +13,15 @@ void SIGINT_Handler(int arg)
     exit (EXIT_SUCCESS);
 }
 
+void SIGUSR1_Handler(int signal, siginfo_t* info, void* extra)
+{
+    pText text;
+
+    read(ServerPipe, text, sizeof(pText));
+
+    //continue
+}
+
 void SIGALRM_Handler(int signal, siginfo_t* info, void* extra)
 {
     
