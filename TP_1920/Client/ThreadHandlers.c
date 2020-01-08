@@ -3,6 +3,7 @@
 void threadKill(int sig_num)
 {
     Exit = true;
+    pthread_exit((void*) NULL);
 }
 
 void* receiveTopicList(void* arg)
@@ -12,17 +13,17 @@ void* receiveTopicList(void* arg)
 
     pTopic topics = (pTopic) arg;
     fd_set fds;
-    struct timeval timeout;
+    struct timeval t;
 
     while(!Exit)
     {
         FD_ZERO(&fds);
         FD_SET(client_read_pipe, &fds);
 
-        timeout.tv_sec = 1; //seconds
-        timeout.tv_usec = 0; //micro-seconds
+        t.tv_sec = 1; //seconds
+        t.tv_usec = 0; //micro-seconds
 
-        if(select(client_read_pipe + 1, &fds, NULL, NULL, &timeout) > 0);
+        if(select(client_read_pipe + 1, &fds, NULL, NULL, &t) > 0);
         {
             if(FD_ISSET(client_read_pipe, &fds))
             {
@@ -31,5 +32,6 @@ void* receiveTopicList(void* arg)
             }
         }
     }
+    
     threadKill(SIGINT);
 }

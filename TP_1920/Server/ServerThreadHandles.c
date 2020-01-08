@@ -22,7 +22,7 @@ void* newClientThreadHandler(void* arg)
     
     int pipe_fd = open(main_pipe_path, O_RDONLY);
     fd_set fds;
-    struct timeval timeout;
+    struct timeval t;
     
     char buffer[50] = "";
     
@@ -31,10 +31,10 @@ void* newClientThreadHandler(void* arg)
         FD_ZERO(&fds);
         FD_SET(pipe_fd, &fds);
         
-        timeout.tv_sec = 0; //seconds
-        timeout.tv_usec = 2500; //microseconds
+        t.tv_sec = 0; //seconds
+        t.tv_usec = 2500; //microseconds
         
-        select_result = select(pipe_fd + 1, &fds, NULL, NULL, &timeout);
+        select_result = select(pipe_fd + 1, &fds, NULL, NULL, &t);
         if(select_result > 0)
         {
             if(FD_ISSET(pipe_fd, &fds))
@@ -68,24 +68,24 @@ void* newMessageThreadHandler(void* arg)
 {
     signal(SIGINT, ThreadKill);
 
-    pClient client = (pClient) arg;
+    pClient cli = (pClient) arg;
     fd_set fds;
     struct timeval t;
 
     while(!Exit)
     {
-        if(pthread_mutex_trylock(&client->pipe_lock) != 0)
+        if(pthread_mutex_trylock(&cli->pipe_lock) != 0)
             continue;
         
         FD_ZERO(&fds);
-        FD_SET(client->s_pipe, &fds); //Set pipe into listening mode
+        FD_SET(cli->s_pipe, &fds); //Set pipe into listening mode
 
         t.tv_sec = 1; //seconds
         t.tv_usec = 0; //micro-seconds
 
-        if(select(client->s_pipe + 1, &fds, NULL, NULL, &t) > 0) //if > 0, something has been read
+        if(select(cli->s_pipe + 1, &fds, NULL, NULL, &t) > 0) //if > 0, something has been read
         {
-            if(FD_ISSET(client->s_pipe, &fds)) //Confirm that pipe was read
+            if(FD_ISSET(cli->s_pipe, &fds)) //Confirm that pipe was read
             {
                 pText newText = malloc(sizeof(Text)); //Allocate memory dynamically for text
                 
@@ -98,16 +98,16 @@ void* newMessageThreadHandler(void* arg)
 
                 int bytes_read;
                 
-                bytes_read = read(client->s_pipe, newText , sizeof(Text));
+                bytes_read = read(cli->s_pipe, newText , sizeof(Text));
                 
                 if(bytes_read > 0)
                 {
                     char topicTitle[MAXTITLELEN];
-                    bytes_read = read(client->s_pipe, topicTitle, sizeof(char) * MAXTITLELEN);
+                    bytes_read = read(cli->s_pipe, topicTitle, sizeof(char) * MAXTITLELEN);
                     
                     if(bytes_read > 0)
                     {
-                        pthread_mutex_unlock(&client->pipe_lock);
+                        pthread_mutex_unlock(&cli->pipe_lock);
                         newText->topic = malloc(sizeof(Topic));
                         
                         if(newText->topic == NULL)
@@ -141,17 +141,17 @@ void* newMessageThreadHandler(void* arg)
             }
         }
         else
-            pthread_mutex_unlock(&client->pipe_lock);
+            pthread_mutex_unlock(&cli->pipe_lock);
     }
 
     ThreadKill(SIGINT);
 }
 
-void* verifyMessagesHandler(void* pipes)
+void* verifyMessagesHandler(void* arg)
 {
     signal(SIGINT, ThreadKill);
     
-    int* pipes_fd = (int*) pipes;
+    int* pipes_fd = (int*) arg;
     
     //pipes_fd[0]; The Read from Verifier Pipe
     //pipes_fd[1]; The Write to Verifier Pipe
@@ -281,10 +281,10 @@ void* keepAliveThreadHandler(void* arg)
 {
     signal(SIGINT, ThreadKill);
     
-    pClient client = (pClient) arg;
+    pClient KeepAlive_Client = (pClient) arg;
     
     //How?
-    if(client == NULL)
+    if(KeepAlive_Client == NULL)
     {
         ThreadKill(SIGINT);
         return ((void*) NULL);
@@ -292,46 +292,46 @@ void* keepAliveThreadHandler(void* arg)
     
     fd_set fds;
     struct timeval t;
-    int timeout = 0;
+    int KeepAlive_Timeout = 0;
     
-    pthread_mutex_lock(&client->pipe_lock);
-    kill(client->c_PID, SIGUSR2);
+    pthread_mutex_lock(&KeepAlive_Client->pipe_lock);
+    kill(KeepAlive_Client->c_PID, SIGUSR2);
     
     while(!Exit)
     {
-        if(timeout >= 5) //Client timed out
+        if(KeepAlive_Timeout >= 5) //Client timed out
         {
-            removeClient(client);
+            removeClient(KeepAlive_Client);
             return ((void*) NULL); //Just in Case
         }
         
-        timeout++;
+        KeepAlive_Timeout++;
         
         FD_ZERO(&fds);
-        FD_SET(client->s_pipe, &fds); //Set pipe into listening mode
+        FD_SET(KeepAlive_Client->s_pipe, &fds); //Set pipe into listening mode
         
         t.tv_sec = 1; //seconds
         t.tv_usec = 0; //micro-seconds
         
-        if(select(client->s_pipe + 1, &fds, NULL, NULL, &t) > 0) //if > 0, something has been read
+        if(select(KeepAlive_Client->s_pipe + 1, &fds, NULL, NULL, &t) > 0) //if > 0, something has been read
         { 
-            if(FD_ISSET(client->s_pipe, &fds)) //Confirm that pipe was read
+            if(FD_ISSET(KeepAlive_Client->s_pipe, &fds)) //Confirm that pipe was read
             {
                 char kab; //Keep Alive Buffer
-                int bytes_read = read(client->s_pipe, &kab, sizeof(char)); //I don't care what was read
+                int bytes_read = read(KeepAlive_Client->s_pipe, &kab, sizeof(char)); //I don't care what was read
                 
                 if(bytes_read > 0) //all good!
                 {
-                    pthread_mutex_unlock(&client->pipe_lock);
+                    pthread_mutex_unlock(&KeepAlive_Client->pipe_lock);
                     sleep(10);
-                    timeout = 0;
+                    KeepAlive_Timeout = 0;
                     
-                    pthread_mutex_lock(&client->pipe_lock);
-                    kill(client->c_PID, SIGUSR2);
+                    pthread_mutex_lock(&KeepAlive_Client->pipe_lock);
+                    kill(KeepAlive_Client->c_PID, SIGUSR2);
                 }
                 else
                 {
-                    removeClient(client);
+                    removeClient(KeepAlive_Client);
                     return ((void*) NULL); //Just in Case
                 }
             }

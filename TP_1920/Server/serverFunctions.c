@@ -347,6 +347,14 @@ void killAllClients(pClient clientList)
         {
             pthread_kill(aux->c_thread, SIGINT);
             pthread_join(aux->c_thread, NULL);
+            
+            pthread_kill(aux->KeepAliveThread, SIGINT);
+            pthread_join(aux->KeepAliveThread, NULL);
+            
+            pthread_mutex_destroy(&aux->pipe_lock);
+            
+            close(aux->c_pipe);
+            close(aux->s_pipe);
         }
         
         pClient aux2 = aux;

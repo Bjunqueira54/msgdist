@@ -116,41 +116,43 @@ pClient populateClientStruct(pClient newClient)
     return newClient;
 }
 
-void removeClient(pClient client)
+void removeClient(pClient cli)
 {
-    if(client == NULL)
+    if(cli == NULL)
         return;
     else
     {
         pClient Next, Prev;
         
-        if(client->next == NULL)
+        if(cli->next == NULL)
             Next = NULL;
         else
-            Next == client->next;
+            Next == cli->next;
         
-        if(client->prev == NULL)
+        if(cli->prev == NULL)
             Prev = NULL;
         else
-            Prev = client->prev;
+            Prev = cli->prev;
         
         if(Prev != NULL)
             Prev->next = Next;
         if(Next != NULL)
             Next->prev = Prev;
         
-        pthread_kill(client->c_thread, SIGINT);
-        pthread_join(client->c_thread, NULL);
+        pthread_kill(cli->c_thread, SIGINT);
+        pthread_join(cli->c_thread, NULL);
         
-        pthread_kill(client->KeepAliveThread, SIGINT);
-        pthread_join(client->KeepAliveThread, NULL);
+        pthread_kill(cli->KeepAliveThread, SIGINT);
+        pthread_join(cli->KeepAliveThread, NULL);
         
-        pthread_mutex_destroy(&client->pipe_lock);
+        pthread_mutex_unlock(&cli->pipe_lock);
+        pthread_mutex_unlock(&cli->pipe_lock);
+        pthread_mutex_destroy(&cli->pipe_lock);
         
-        close(client->c_pipe);
-        close(client->s_pipe);
+        close(cli->c_pipe);
+        close(cli->s_pipe);
         
-        free(client);
+        free(cli);
     }
 }
 

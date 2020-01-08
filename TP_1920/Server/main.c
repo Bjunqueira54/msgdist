@@ -3,7 +3,7 @@
 bool Exit, Filter;
 pid_t childPID;
 pClient clientList;
-pText textList;
+pText textList; //Temp Texts
 pTopic topicList;
 
 pthread_mutex_t client_lock, temp_text_lock, topic_lock, text_lock;
@@ -16,7 +16,7 @@ void terminateServer(int num)
     kill(childPID, SIGUSR2);
     fprintf(stderr, "\nThe server is shutting down\n");
     
-    printf("Signalling all clients...\n");
+    printf("Signaling all clients...\n");
     killAllClients(clientList);
 
     getchar();

@@ -148,10 +148,10 @@ int main(int argc, char** argv)
             break;
         default:
             break;
-        }   
-        
+        }
         refresh();
-    } while(!Exit);
+    }
+    while(!Exit);
     
     pthread_kill(serverReadThread, SIGINT);
     pthread_join(serverReadThread, NULL);
@@ -159,6 +159,9 @@ int main(int argc, char** argv)
     endwin();
     
     printf("Client will shutdown\n");
+    
+    close(client_read_pipe);
+    close(server_write_pipe);
     
     return (EXIT_SUCCESS);
 }
