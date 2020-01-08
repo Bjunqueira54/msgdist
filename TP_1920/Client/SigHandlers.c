@@ -8,13 +8,7 @@
 void SIGINT_Handler(int arg)
 {
     Exit = true;
-    endwin();
     printf("Server sent a SIGINT\n");
-    
-    pthread_kill(serverReadThread, SIGINT);
-    pthread_join(serverReadThread, NULL);
-    
-    exit(EXIT_SUCCESS);
 }
 
 void SIGUSR1_Handler(int signal, siginfo_t* info, void* extra)

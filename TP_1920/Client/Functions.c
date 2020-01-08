@@ -161,9 +161,9 @@ void PrintMenu(pTopic TopicList)
         
         int y = 1, x = 1;
         
-        for(;y < getmaxy(stdscr) - 1 && TopicList != NULL; y++)
+        for(pTopic aux = TopicList; y < getmaxy(stdscr) - 1 && aux != NULL; y++, aux = aux->next)
         {
-            mvwaddstr(stdscr, y, x, TopicList->title);
+            mvwaddstr(stdscr, y, x, aux->title);
         }
     }
 }
