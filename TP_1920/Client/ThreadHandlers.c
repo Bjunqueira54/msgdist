@@ -11,13 +11,17 @@ void* receiveTopicList(void* list)
 
     pTopic topics = (pTopic) list;
     fd_set fds;
+    struct timeval timeout;
 
     while(!Exit)
     {
         FD_ZERO(&fds);
         FD_SET(ServerPipe, &fds);
 
-        if(select(ServerPipe + 1, &fds, NULL, NULL, NULL) > 0);
+        timeout.tv_sec = 1; //seconds
+        timeout.tv_usec = 0; //micro-seconds
+
+        if(select(ServerPipe + 1, &fds, NULL, NULL, &timeout) > 0);
         {
             if(FD_ISSET(ServerPipe, &fds))
             {
