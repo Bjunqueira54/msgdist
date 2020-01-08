@@ -2,15 +2,20 @@
 
 pClient addNewClient(pClient listStart, pClient newClient)
 {
+    
     if(listStart == NULL)
     {
+        pthread_mutex_lock(&client_lock);   //Lock semaphore
         newClient->next = newClient->prev = NULL;
         listStart = newClient;
+        pthread_mutex_unlock(&client_lock); //Unlock semaphore
         return listStart;
     }
     
     pClient aux = listStart;
 
+    pthread_mutex_lock(&client_lock); //Lock semaphore
+    
     if(aux->next == NULL)
         aux->next = newClient;
     else
@@ -21,10 +26,12 @@ pClient addNewClient(pClient listStart, pClient newClient)
         aux->next = newClient;
     }
     
+    pthread_mutex_unlock(&client_lock); //Unlock semaphore
+    
     return listStart;
 }
 
-pClient createNewClientPipes(pClient newClient)
+    pClient createNewClientPipes(pClient newClient)
 {
     char pipe_name[15], pipe_path[50];
     

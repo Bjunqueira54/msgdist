@@ -10,11 +10,11 @@ pthread_mutex_t client_lock, temp_text_lock, topic_lock, text_lock;
 
 void terminateServer(int num)
 {
-    fprintf(stderr, "\n\nServidor recebeu SIGINT\n");
+    fprintf(stderr, "\n\nServer recieved SIGINT\n");
     
     deleteServerFiles();
     kill(childPID, SIGUSR2);
-    fprintf(stderr, "\nGestor vai desligar\n");
+    fprintf(stderr, "\nThe server is shutting down\n");
     
     printf("Signalling all clients...\n");
     killAllClients(clientList);
@@ -139,9 +139,9 @@ int main(int argc, char** argv)
 
         if(strcmp(parsedCmd[0], "shutdown") == 0)
         {
-            killAllClients(clientList);
-
             Exit = true;
+            
+            killAllClients(clientList);
         }
         else if(strcmp(parsedCmd[0], "help") == 0)
         {
