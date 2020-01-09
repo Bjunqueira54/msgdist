@@ -299,7 +299,7 @@ void listAllTopics(pTopic list)
 
 void deleteMsg(pTopic list)
 {
-
+    printf("\nComando reconhecido\n");
 }
 
 void deleteEmptyTopics(pTopic list)

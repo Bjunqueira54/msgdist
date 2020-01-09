@@ -31,7 +31,7 @@ void* receiveTopicList(void* arg)
         t.tv_sec = 1; //seconds
         t.tv_usec = 0; //micro-seconds
 
-        if(select(client_read_pipe + 1, &fds, NULL, NULL, &t) > 0);
+        if(select(client_read_pipe + 1, &fds, NULL, NULL, &t) > 0)
         {
             if(FD_ISSET(client_read_pipe, &fds))
             {
@@ -42,10 +42,13 @@ void* receiveTopicList(void* arg)
                 while(tmp_topic != NULL)
                     tmp_topic = tmp_topic->next;
 
-                if(read(client_read_pipe, newTopic, sizeof(pTopic)) == 0);
-                    newTopic = NULL;
-                
-                tmp_topic->next = newTopic;
+                if(read(client_read_pipe, newTopic, sizeof(pTopic)) == 0)
+                {
+                    free(newTopic);
+                    tmp_topic->next = NULL;
+                }
+                else
+                    tmp_topic->next = newTopic;
             
                 pthread_mutex_unlock(&mlock);
             }
