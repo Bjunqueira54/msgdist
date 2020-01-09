@@ -217,46 +217,49 @@ void* verifyMessagesHandler(void* arg)
         //This is a multi-threaded application, errors are fatal
         if(existing_id < 1)
         {
-            perror("Error in verifyMessagesHandler\n"
-                    "existing_id less than 1 but topicList is NULL\n");
-
-            pText text_aux;
+            pTopic topic_it;
 
             pthread_mutex_lock(&temp_text_lock);
-            for(text_aux = textList; text_aux->next != NULL; text_aux = text_aux->next);
+            for(topic_it = topicList; topic_it->next != NULL; topic_it = topic_it->next);
 
-            text_aux->next = newText;
-            newText->prev = text_aux;
+            topic_it->next = newText->topic;
+            newText->topic->prev = topic_it;
+            
+            topic_it = topic_it->next;
+            
+            topic_it->TextStart = newText;
+            topic_it->id = topic_it->prev->id + 1;
+            
             pthread_mutex_unlock(&temp_text_lock);
             pthread_mutex_unlock(&topic_lock);
             continue;
         }
         else //Add to global linked list
         {
-            pTopic topic_run;
+            pTopic topic_it;
             
-            for(topic_run = topicList; topic_run->id !=  existing_id && topic_run->next != NULL; topic_run = topic_run->next);
+            for(topic_it = topicList; topic_it->id !=  existing_id && topic_it->next != NULL; topic_it = topic_it->next);
             
             //Something went wrong, but that's ok
-            if(existing_id != topic_run->id && topic_run->next == NULL)
+            if(existing_id != topic_it->id && topic_it->next == NULL)
             {
-                topic_run->next = newText->topic;
-                newText->topic->prev = topic_run;
-                newText->topic->id = topic_run->id + 1;
+                topic_it->next = newText->topic;
+                newText->topic->prev = topic_it;
+                newText->topic->id = topic_it->id + 1;
                 newText->topic->TextStart = newText;
             }
             else
             {
                 pTopic free_topic_aux = newText->topic;
-                newText->topic = topic_run;
+                newText->topic = topic_it;
                 free(free_topic_aux);
                 
-                pText text_run;
+                pText text_it;
                 
-                for(text_run = topic_run->TextStart; text_run->next != NULL; text_run = text_run->next);
+                for(text_it = topic_it->TextStart; text_it->next != NULL; text_it = text_it->next);
                 
-                text_run->next = newText;
-                newText->prev = text_run;
+                text_it->next = newText;
+                newText->prev = text_it;
             }
         }
         pthread_mutex_unlock(&topic_lock);
@@ -277,6 +280,7 @@ int searchForTopic(const char* TopicTitle)
     {
         if(strcmp(aux->title, TopicTitle) == 0)
             return aux->id;
+        aux = aux->next;
     }
     
     return -1;
