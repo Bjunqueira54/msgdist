@@ -173,8 +173,17 @@ int main(int argc, char** argv)
     pthread_join(newClientThread, NULL);
     pthread_join(verifyMessageThread, NULL);
     
+    pthread_mutex_unlock(&client_lock);
     pthread_mutex_destroy(&client_lock);
+    
+    pthread_mutex_unlock(&temp_text_lock);
     pthread_mutex_destroy(&temp_text_lock);
+    
+    pthread_mutex_unlock(&topic_lock);
+    pthread_mutex_destroy(&topic_lock);
+    
+    pthread_mutex_unlock(&text_lock);
+    pthread_mutex_destroy(&text_lock);
     
     fprintf(stdout, "\nVerifier shutdown\n");
     fprintf(stdout, "\nServer will shutdown\n");

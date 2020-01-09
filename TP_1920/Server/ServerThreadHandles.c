@@ -59,9 +59,11 @@ void* newClientThreadHandler(void* arg)
                     free(newClient);
             }
         }
+        
+        purgeClients(); //Remove all disconnected clients
     }
     
-    ThreadKill(SIGINT);
+    pthread_exit((void*) NULL);
 }
 
 void* newMessageThreadHandler(void* arg)
@@ -72,7 +74,7 @@ void* newMessageThreadHandler(void* arg)
     fd_set fds;
     struct timeval t;
 
-    while(!Exit)
+    while(!Exit && !cli->Disconnect)
     {
         if(pthread_mutex_trylock(&cli->pipe_lock) != 0)
             continue;
@@ -137,14 +139,17 @@ void* newMessageThreadHandler(void* arg)
                     pthread_mutex_unlock(&temp_text_lock);
                 }
                 else
+                {
                     free(newText);
+                    pthread_mutex_unlock(&cli->pipe_lock);
+                }
             }
         }
         else
             pthread_mutex_unlock(&cli->pipe_lock);
     }
 
-    ThreadKill(SIGINT);
+    pthread_exit((void*) NULL);
 }
 
 void* verifyMessagesHandler(void* arg)
@@ -256,7 +261,7 @@ void* verifyMessagesHandler(void* arg)
         }
         pthread_mutex_unlock(&topic_lock);
     }
-    ThreadKill(SIGINT);
+    pthread_exit((void*) NULL);
 }
 
 int searchForTopic(const char* TopicTitle)
@@ -286,8 +291,7 @@ void* keepAliveThreadHandler(void* arg)
     //How?
     if(KeepAlive_Client == NULL)
     {
-        ThreadKill(SIGINT);
-        return ((void*) NULL);
+        pthread_exit((void*) NULL);
     }
     
     fd_set fds;
@@ -297,12 +301,12 @@ void* keepAliveThreadHandler(void* arg)
     pthread_mutex_lock(&KeepAlive_Client->pipe_lock);
     kill(KeepAlive_Client->c_PID, SIGUSR2);
     
-    while(!Exit)
+    while(!Exit && !KeepAlive_Client->Disconnect)
     {
         if(KeepAlive_Timeout >= 5) //Client timed out
         {
             removeClient(KeepAlive_Client);
-            return ((void*) NULL); //Just in Case
+            ThreadKill(SIGINT); //Just in Case
         }
         
         KeepAlive_Timeout++;
@@ -332,7 +336,7 @@ void* keepAliveThreadHandler(void* arg)
                 else
                 {
                     removeClient(KeepAlive_Client);
-                    return ((void*) NULL); //Just in Case
+                    pthread_exit((void*) NULL);
                 }
             }
         }

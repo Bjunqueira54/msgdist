@@ -65,6 +65,7 @@ void listAllUsers(pClient);
 void listAllMesages(pTopic);
 void deleteEmptyTopics(pTopic);
 void killAllClients(pClient);
+void purgeClients();
 
 int deleteServerFiles();
 int createServerFiles();

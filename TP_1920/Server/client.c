@@ -106,6 +106,7 @@ pClient populateClientStruct(pClient newClient)
         return NULL;
     }
 
+    newClient->Disconnect = false;
     pthread_mutex_init(&newClient->pipe_lock, NULL);
     pthread_create(&newClient->KeepAliveThread, NULL, keepAliveThreadHandler, (void*) newClient);
     pthread_create(&newClient->c_thread, NULL, newMessageThreadHandler, (void*) newClient);
@@ -139,15 +140,19 @@ void removeClient(pClient cli)
         if(Next != NULL)
             Next->prev = Prev;
         
-        pthread_kill(cli->c_thread, SIGINT);
-        pthread_join(cli->c_thread, NULL);
+        cli->Disconnect = true;
         
+        /*pthread_kill(cli->c_thread, SIGINT);
         pthread_kill(cli->KeepAliveThread, SIGINT);
-        pthread_join(cli->KeepAliveThread, NULL);
+        pthread_join(cli->c_thread, NULL);
+        pthread_join(cli->KeepAliveThread, NULL);*/
         
         pthread_mutex_unlock(&cli->pipe_lock);
         pthread_mutex_unlock(&cli->pipe_lock);
         pthread_mutex_destroy(&cli->pipe_lock);
+        
+        pthread_join(cli->c_thread, NULL);
+        pthread_join(cli->KeepAliveThread, NULL);
         
         close(cli->c_pipe);
         close(cli->s_pipe);
