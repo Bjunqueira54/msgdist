@@ -163,7 +163,9 @@ void PrintMenu()
     }
     else
     {
-        int y = 2, x = 1;
+        int y = 4, x = 1;
+        
+        mvwaddstr(stdscr, 2, 2, "Current Topics:");
         
         for(pTopic aux = topicList; y < getmaxy(stdscr) - 1 && aux != NULL; y++, aux = aux->next)
             mvwaddstr(stdscr, y, x, aux->title);

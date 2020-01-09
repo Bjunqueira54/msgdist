@@ -92,7 +92,7 @@ int main(int argc, char** argv)
     mvwaddstr(stdscr, 1, 1, "Welcome to MSGDIST!");
     wrefresh(stdscr);
     
-    do
+    while(!Exit)
     {
         PrintMenu();
         
@@ -154,7 +154,6 @@ int main(int argc, char** argv)
         }
         refresh();
     }
-    while(!Exit);
     
     pthread_kill(serverReadThread, SIGINT);
     pthread_join(serverReadThread, NULL);

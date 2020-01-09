@@ -2,22 +2,7 @@
 
 void SIGALRM_Handler(int sigNum, siginfo_t *info, void *extra)
 {
-    /*union sigval val = (union sigval) extra;
-
-    pClient aux = clientList;
-
-    while(aux->next != NULL)
-    {
-        if(aux->c_PID == val.sival_int)
-            break;
-        
-        aux = aux->next;
-    }
     
-    if(aux->next == NULL)
-        aux->alive_flag = 0;
-    else
-        aux->alive_flag = 1;*/
 }
 
 void SIGUSR1_Handler(int sigNum, siginfo_t* info, void* extra)
@@ -34,7 +19,7 @@ void SIGUSR1_Handler(int sigNum, siginfo_t* info, void* extra)
             break;
         aux_c = aux_c->next;
     }
-
+    
     //Find text list
     pTopic aux_t = topicList;
 
