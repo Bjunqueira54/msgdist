@@ -14,7 +14,7 @@ extern "C" {
         int id;
 
         pTopic next;
-	pTopic prev;
+        pTopic prev;
         
         pText TextStart;
     };

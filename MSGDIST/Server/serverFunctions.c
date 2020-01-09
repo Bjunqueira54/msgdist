@@ -1,35 +1,54 @@
 #include "serverHeader.h"
 
-int server_file;
+int server_file, maxMessages;
 
-void initializeVerifier(int *parent_to_child, int *child_to_parent, char* badwords)
+pid_t initializeVerifier(int *parent_to_child, int *child_to_parent)
 {
     pipe(parent_to_child); //Server-to-Child pipe (Server write)
     pipe(child_to_parent); //Child-to-Server (Server Read)
 
     pid_t child_pid = fork();
     
-    if(child_pid == 0)  //Child
-    {
+    if(child_pid == 0) // Child
+    { 
+        /* Close unused ends */
         close(child_to_parent[0]);
         close(parent_to_child[1]);
         
-        close(STDIN_FILENO);
+        close(STDIN_FILENO); // 0
         dup(parent_to_child[0]);
         close(parent_to_child[0]);
         
-        close(STDOUT_FILENO);
+        close(STDOUT_FILENO); // 1
         dup(child_to_parent[1]);
         close(child_to_parent[1]);
         
-        if(execlp("./verificador", "verificador", badwords, (char *) NULL) == -1)
+        if(execlp("./verificador", "verificador", BADWORDS, (char *) NULL) == -1)
             fprintf(stderr, "Error starting the verifier!\n");
     }
-    else    //Parent
+    else // Parent
     {
         close(child_to_parent[1]);
         close(parent_to_child[0]);
+        
+        return child_pid;
     }
+}
+
+void* receiveMsgHandler(void* data)
+{
+    pText msg = (pText) data;
+
+    msg->article[strlen(msg->article) - 1] = '\0';
+
+    strncat(msg->article, " ##MSGEND##\n", sizeof(char) * 12);
+
+    //start reading from pipe
+}
+
+void receiveClientMsg()
+{
+
 }
 
 char** stringParser(const char* string)
@@ -63,8 +82,7 @@ char** stringParser(const char* string)
             }
             
             break;
-        }
-        
+        }  
         currentWordSize++;
     }
     
@@ -91,7 +109,7 @@ char** stringParser(const char* string)
     }
     
     if(arraySize == 2) //Only 1 word + NULL
-    {
+    { 
         for(int i = 0; string[i] != '\0'; i++)
         {
             parsedStrings[0][i] = string[i];
@@ -100,9 +118,7 @@ char** stringParser(const char* string)
         parsedStrings[1] = NULL;
     }
     else if(arraySize < 2) //something went HORRIBLY WRONG!
-    {
         return NULL;
-    }
     else
     {
         int i = 0;
@@ -117,9 +133,7 @@ char** stringParser(const char* string)
                     break;
                 }
                 else
-                {
                     parsedStrings[y][x] = string[i];
-                }
                 
                 i++;
             }
@@ -136,131 +150,250 @@ char** stringParser(const char* string)
     return parsedStrings;
 }
 
+void addNewMessage(pText first, pText newMsg)
+{
+    if(first == NULL)
+    {
+        newMsg->next = newMsg->prev = NULL;
+        first = newMsg;
+        return;
+    }
+    
+    pText aux = first;
+    
+    if(countMsgs(aux) == maxMessages)
+    {
+        fprintf(stderr, "Max number of messages reached\n");
+        return;
+    }
+
+    if(aux->next == NULL)
+        aux->next = newMsg;
+    else
+    {
+        while(aux->next != NULL)
+            aux = aux->next;
+        
+        aux->next = newMsg;
+    }
+
+    fprintf(stderr, "New message added\n");
+}
+
+int countMsgs(pText m)
+{
+    int num = 0;
+
+    if(m == NULL)
+        return num;
+    
+    do
+    {
+        m = m->next;
+        num++;
+    }
+    while(m != NULL);
+
+    return num;
+}
+
+void addNewTopic(pTopic first, pTopic newTopic)
+{
+    if(first == NULL)
+    {
+        newTopic->next = newTopic->prev = NULL;
+        first = newTopic;
+        fprintf(stderr, "New topic added\n");
+        return;
+    }
+    
+    pTopic aux = first;
+    
+    if(aux->next == NULL)
+        aux->next = newTopic;
+    else
+    {
+        while(aux->next != NULL)
+            aux = aux->next;
+        
+        aux->next = newTopic;
+    }
+
+    fprintf(stderr, "New topic added\n");
+
+    sendToClients();
+}
+
+void sendToClients()
+{
+    pthread_mutex_lock(&topic_lock);
+    for(pClient aux_c = clientList; aux_c != NULL; aux_c = aux_c->next)
+    {
+        for(pTopic aux_t = topicList; aux_t != NULL; aux_t = aux_t->next)
+        {
+            write(aux_c->c_pipe, aux_t, sizeof(pTopic));
+        }
+    }
+    pthread_mutex_unlock(&topic_lock);
+}
+
 void listAllUsers(pClient clientList)
 {
     if(clientList == NULL)
+    {
+        printf("No users");
         return;
+    }
     
-    printf("Currently Connected Users: \n");
+    printf("\nCurrently Connected Users:\n");
     
     pClient aux = clientList;
     
     do
     {
-        printf("%d\n", aux->c_PID);
+        printf("User: %s - PID: %d\n", aux->username, aux->c_PID);
         aux = aux->next;
     }
     while(aux != NULL);
 }
 
-void listAllMesages()
+void listAllMesages(pTopic list)
 {
-    printf("All Messages on the server: \n");
+    if(list == NULL)
+    {
+        printf("There are no messages on the server\n");
+        return;
+    }
+    printf("\nAll Messages on the server:\n");
+
+    pthread_mutex_lock(&topic_lock);
+    for(pTopic topic_run = list; topic_run != NULL; topic_run = topic_run->next)
+    {
+        for(pText text_run = topic_run->TextStart; text_run != NULL; text_run = text_run->next)
+        {
+            fprintf(stdout, "%s (%s)\n", text_run->title, topic_run->title);
+        }
+    }
+    pthread_mutex_unlock(&topic_lock);
 }
 
-void listAllTopics()
+void listAllTopics(pTopic list)
 {
-    printf("Current Topics:\n");
+    if(list == NULL)
+    {
+        printf("There are no topics on the server\n");
+        return;
+    }
+
+    pTopic aux = list;
+    
+    printf("\nCurrent Topics:\n");
+
+    do
+    {
+        printf("%s\n", aux->title);
+        aux = aux->next;
+    }
+    while(aux != NULL);
 }
 
-void deleteEmptyTopics() 
+void deleteMsg(pTopic list)
 {
+
+}
+
+void deleteEmptyTopics(pTopic list)
+{
+    if(list == NULL)
+        return;
+
+    pTopic aux_prev = NULL, aux_act = list;
+
     printf("Deleting all empty topics from the server.\n");
-}
 
-void showEnvVars()
-{
-    getenv("MAXMSG") == NULL ? printf("MAXMSG: N/A\n") : printf("MAXMSG: %s\n", getenv("MAXMSG"));
-    getenv("MAXNOT") == NULL ? printf("MAXNOT: N/A\n") : printf("MAXNOT: %s\n", getenv("MAXNOT"));
-    getenv("WORDSNOT") == NULL ? printf("WORDSNOT: N/A\n") : printf("WORDSNOT: %s\n", getenv("WORDSNOT"));
-}
-
-void testVerifier(int parent_write_pipe, int parent_read_pipe)
-{
-    system("clear");
-    
-    printf("Write a message to send to the verifier (no need to write ##MSGEND##)\n");
-    printf("Message: ");
-    
-    char test_message[1000];
-    
-    fgets(test_message, (1000 - 12), stdin); //1000 - 12 because I need to strcat " ##MSGEND##\n" to it
-    
-    test_message[strlen(test_message) - 1] = '\0';
-    
-    strncat(test_message, " ##MSGEND##\n", sizeof(char) * 12);
-    
-    write(parent_write_pipe, test_message, strlen(test_message));
-    
-    char verifier_response[5];
-    char verifier_char;
-    int i = 0;
-    
-    while(read(parent_read_pipe, &verifier_char, sizeof(char)) != 0)
+    if(list->next == NULL)
     {
-        verifier_response[i] = verifier_char;
-        
-        if(verifier_char == '\n')
-            break;
-        
-        i++;
+        free(aux_act);
+        list = NULL;
     }
-    
-    verifier_response[i] = '\0';
-    
-    printf("Number of wrong words: %s", verifier_response);
-}
 
-pClient addTestClient(pClient clientList)
-{
-    pClient newClient = calloc(1, sizeof(Client));
-    
-    printf("Enter client PID: ");
-    char s_pid[10];
-    fgets(s_pid, 10, stdin);
-    
-    s_pid[strlen(s_pid) - 1] = '\0';
-    pid_t c_pid;
-    
-    sscanf(s_pid, "%d", &c_pid);
-    
-    newClient->c_PID = c_pid;
-    newClient->c_pipe = 0;
-    //newClient->c_thread = NULL;
-    newClient->next = NULL;
-    newClient->prev = NULL;
-    //newClient->username = NULL;
-    
-    if(clientList == NULL)
-        clientList = newClient;
-    else
+    aux_prev = aux_act;
+    aux_act = aux_act->next;
+
+    do
     {
-        pClient aux = clientList;
-        
-        if(aux->next == NULL)
+        if(aux_act->TextStart == NULL)
         {
-            aux->next = newClient;
+            pTopic tmp = aux_act;
+            aux_prev->next = aux_act->next;
+            free(tmp);
+            aux_act = aux_act->next;
         }
-        else
-        {
-            while(aux->next != NULL)
-                aux = aux->next;
 
-            aux->next = newClient;
-        }
+        aux_prev = aux_act;
+        aux_act = aux_act->next;
     }
+    while(aux_act != NULL);
 }
 
 void killAllClients(pClient clientList)
 {
+    if(clientList == NULL)
+        return;
+    
     union sigval value;
     value.sival_int = 0;
     
-    pClient aux = clientList;
-
-    while(aux != NULL)
+    for(pClient aux = clientList; aux != NULL;)
     {
-        sigqueue(aux->c_PID, SIGINT, value);
+        kill(aux->c_PID, SIGINT);
+        
+        if(aux->c_thread != 0)
+        {
+            pthread_kill(aux->c_thread, SIGINT);
+            pthread_join(aux->c_thread, NULL);
+            
+            pthread_kill(aux->KeepAliveThread, SIGINT);
+            pthread_join(aux->KeepAliveThread, NULL);
+            
+            pthread_mutex_destroy(&aux->pipe_lock);
+            
+            close(aux->c_pipe);
+            close(aux->s_pipe);
+        }
+        
+        pClient aux2 = aux;
+        aux = aux->next;
+        free(aux2);
+    }
+}
+
+void purgeClients()
+{
+    if(clientList == NULL)
+        return;
+    
+    if(clientList->next == NULL && clientList->Disconnect)
+        clientList = NULL;
+    
+    for(pClient aux = clientList; aux != NULL;)
+    {
+        if(aux->Disconnect)
+        {
+            pClient Next, Prev;
+            
+            Next = aux->next;
+            Prev = aux->prev;
+            
+            if(Prev != NULL)
+                Prev->next = Next;
+            if(Next != NULL)
+                Next->prev = Prev;
+            
+            free(aux);
+            aux = Next;
+            continue;
+        }
         aux = aux->next;
     }
 }
@@ -305,7 +438,7 @@ int createServerFiles()
     return 0;
 }
 
-int deleteServerFiles() 
+int deleteServerFiles()
 {    
     if (remove(SERVER_PID) != 0)
     {
@@ -313,7 +446,35 @@ int deleteServerFiles()
         return -1;
     }
     
+    system("rm /tmp/msgdist/*");
     system("rmdir /tmp/msgdist");
     
     return 0; 
+}
+
+int sendTextToVerifier(int parent_read_pipe, int parent_write_pipe, pText newText)
+{
+    char aux[MAXTEXTLEN + 12]; //MAXTEXTLEN + ##MSGEND## + \n + \0
+    strcpy(aux, newText->article);
+    strncat(aux, " ##MSGEND##\n", sizeof(char) * 12);
+    
+    write(parent_write_pipe, aux, strlen(aux));
+    
+    char verifier_response[5];
+    char verifier_char;
+    int i = 0;
+    
+    while(read(parent_read_pipe, &verifier_char, sizeof(char)) != 0)
+    {
+        verifier_response[i] = verifier_char;
+        
+        if(verifier_char == '\n')
+            break;
+        
+        i++;
+    }
+    
+    verifier_response[i] = '\0';
+    
+    return atol(verifier_response);
 }

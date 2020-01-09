@@ -9,7 +9,7 @@ extern "C" {
 
     void newNotification(const char* notice_str);
     void ClearTestPopUp();
-    void PrintMenu(pTopic);
+    void PrintMenu();
     void newMessage(pTopic);
     void newTopicMessage(char*);
     

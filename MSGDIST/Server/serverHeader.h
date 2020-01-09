@@ -34,34 +34,40 @@ typedef struct client Client, *pClient;
 #include "../topic.h"
 #include "../text.h"
 #include "client.h"
-#include "serverInterface.h"
+#include "ServerThreadHandles.h"
+#include "SigHandlers.h"
 
-#define MAXMSG_DEFAULT 25
-#define MAXNOT_DEFAULT 3
-#define WORDSNOT_DEFAULT "badwords.txt"
+#define BADWORDS "badwords.txt"
 
-extern int maxMessages;
-extern int childPID;
-extern int server_file;
-extern bool Exit;
-extern bool Filter;
-//extern pClient clientList;
+extern int maxMessages, server_file;
+extern bool Exit, Filter;
+extern pid_t childPID;
+extern pText textList;
+extern pTopic topicList;
+extern pClient clientList;
+extern pthread_mutex_t client_lock, temp_text_lock, topic_lock, text_lock;
 
-void initializeVerifier(int*, int *, char*);    
+pid_t initializeVerifier(int* , int *);
 void serverMainLoop(char*);
 bool stringCompare(char *, char *);
 
-bool parseCommands(char cmd[]);
-bool parseOptionCommands(char cmd[]);
+void* receiveMsgHandler(void*);
+void sendMsgToVerifier();
+void receiveClientMsg();
+void addNewMessage(pText, pText);
+int countMsgs(pText);
+void addNewTopic(pTopic, pTopic);
+void sendToClients();
+void deleteMsg(pTopic);
 
-void listAllTopics();
+int sendTextToVerifier(int, int, pText);
+
+void listAllTopics(pTopic);
 void listAllUsers(pClient);
-void listAllMesages();
-void showEnvVars();
-void testVerifier(int, int);
-pClient addTestClient(pClient);
-void deleteEmptyTopics();
+void listAllMesages(pTopic);
+void deleteEmptyTopics(pTopic);
 void killAllClients(pClient);
+void purgeClients();
 
 int deleteServerFiles();
 int createServerFiles();

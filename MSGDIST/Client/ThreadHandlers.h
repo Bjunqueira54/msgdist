@@ -7,6 +7,9 @@ extern "C" {
 
 #include "clientHeader.h"
 
+void* receiveTopicList(void*);
+void* UserInputThreadHandler(void*);
+
 #ifdef __cplusplus
 }
 #endif

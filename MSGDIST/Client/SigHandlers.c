@@ -7,16 +7,25 @@
 //perfect either.
 void SIGINT_Handler(int arg)
 {
-    /*Exit = true;
-    exit (EXIT_SUCCESS);*/
-    
-    endwin();
+    Exit = true;
     printf("Server sent a SIGINT\n");
-
-    exit (EXIT_SUCCESS);
 }
 
-void SIGALRM_Handler(int signal, siginfo_t* info, void* extra)
+void SIGUSR1_Handler(int signal, siginfo_t* info, void* extra) //Client
 {
-    
+    pText text;
+
+    //tem de ler todas
+    read(client_read_pipe, text, sizeof(pText));
+
+    //continue
+}
+
+void SIGUSR2_Handler(int signal) //Client
+{
+    char c = 'A';
+    pthread_mutex_lock(&mlock);
+    write(server_write_pipe, &c, sizeof(char));
+    sleep(1);
+    pthread_mutex_unlock(&mlock);
 }

@@ -16,4 +16,4 @@ SigHandlers.o:	SigHandlers.c $(headers)
 ThreadHandlers.o:	ThreadHandlers.c $(headers)
 
 clean:
-	rm	./*.o
+	rm	./*.o && rm ./client

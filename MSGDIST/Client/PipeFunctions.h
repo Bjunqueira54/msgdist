@@ -7,7 +7,9 @@ extern "C" {
 
 #include "clientHeader.h"
     
-    extern int ServerPipe;
+    extern int client_read_pipe, server_write_pipe;
+    
+    void createPipes(const char*);
     
     void SendTextToServer(char*, pText);
     
