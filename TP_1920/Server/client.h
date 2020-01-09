@@ -14,6 +14,8 @@ extern "C" {
         
         pid_t c_PID;
         
+        bool Disconnect;
+        
         pthread_t c_thread;
         pthread_t KeepAliveThread;
         

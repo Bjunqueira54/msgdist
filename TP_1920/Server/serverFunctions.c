@@ -254,7 +254,8 @@ void addNewTopic(pTopic first, pTopic newTopic)
 
 void listAllUsers(pClient clientList)
 {
-    if(clientList == NULL) {
+    if(clientList == NULL)
+    {
         printf("No users");
         return;
     }
@@ -360,6 +361,36 @@ void killAllClients(pClient clientList)
         pClient aux2 = aux;
         aux = aux->next;
         free(aux2);
+    }
+}
+
+void purgeClients()
+{
+    if(clientList == NULL)
+        return;
+    
+    if(clientList->next == NULL && clientList->Disconnect)
+        clientList = NULL;
+    
+    for(pClient aux = clientList; aux != NULL;)
+    {
+        if(aux->Disconnect)
+        {
+            pClient Next, Prev;
+            
+            Next = aux->next;
+            Prev = aux->prev;
+            
+            if(Prev != NULL)
+                Prev->next = Next;
+            if(Next != NULL)
+                Next->prev = Prev;
+            
+            free(aux);
+            aux = Next;
+            continue;
+        }
+        aux = aux->next;
     }
 }
 
