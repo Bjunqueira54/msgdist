@@ -57,6 +57,7 @@ void receiveClientMsg();
 void addNewMessage(pText, pText);
 int countMsgs(pText);
 void addNewTopic(pTopic, pTopic);
+void sendToClients();
 
 int sendTextToVerifier(int, int, pText);
 

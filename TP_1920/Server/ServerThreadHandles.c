@@ -347,41 +347,50 @@ void* keepAliveThreadHandler(void* arg)
 
 void* textCountdownHandler(void* arg)
 {
-    while(!Exit) //thread cicle
+    while(!Exit) //thread cycle
     {
         if(topicList == NULL)
             continue;
 
-        for(pTopic aux = topicList; aux != NULL; ) //topic cicle
+        for(pTopic topic_it = topicList; topic_it != NULL;) //topic cycle
         {
-            for(pText aux_prev = NULL, aux_act = aux->TextStart; aux_act != NULL; ) //text cicle
+            for(pText text_it = topic_it->TextStart; text_it != NULL;) //text cycle
             {
-                aux_act->duration -= 1;
+                text_it->duration--;
 
-                if(aux_act->duration == 0)
+                if(text_it->duration == 0)
                 {
-                    if(aux_act->next == NULL && aux_prev == NULL)
+                    if(text_it->next == NULL && text_it->prev == NULL)
                     {
-                        free(aux_act);
-                        topicList->TextStart = NULL;
+                        free(text_it);
+                        topic_it->TextStart = NULL;
                     }
                     else
                     {
-                        aux_prev->next = aux_act->next;
-                        free(aux_act);
-                        aux_act = aux_prev->next;
+                        pText Next, Prev;
+                        
+                        Next = text_it->next;
+                        Prev = text_it->prev;
+                        
+                        if(Next != NULL)
+                            Next->prev = Prev;
+                        if(Prev != NULL)
+                            Prev->next = Next;
+                        
+                        pText aux = text_it;
+                        text_it = Next;
+                        free(aux);
                     }
                     continue;
                 }
                 
-                aux_prev = aux_act;
-                aux_act = aux_act->next;
+                text_it = text_it;
+                text_it = text_it->next;
             }
             
-            aux = aux->next;
-            sleep(1);
+            topic_it = topic_it->next;
         }
+        sleep(1);
     }
-
-    ThreadKill(SIGINT);
+    pthread_exit((void*) NULL);
 }
