@@ -197,36 +197,6 @@ int countMsgs(pText m)
     return num;
 }
 
-void removeExpiredMsg(pText list) //será adapatado a uma thread
-{ 
-    if(list == NULL)
-        return;
-
-    pText aux_n = list->next, aux = list;
-
-    do
-    {
-        if(aux_n->duration == 0)
-        {
-            if(aux_n->next == NULL)
-            {
-                aux->next = NULL;
-                free(aux_n);
-            }
-            else
-            {
-                aux_n = aux_n->next;
-                free(aux->next);
-                aux->next = aux_n;
-            }
-        }
-
-        aux = aux_n;
-        aux_n = aux_n->next;
-    }
-    while(aux->next != NULL);
-}
-
 void addNewTopic(pTopic first, pTopic newTopic)
 {
     if(first == NULL)
@@ -250,6 +220,17 @@ void addNewTopic(pTopic first, pTopic newTopic)
     }
 
     fprintf(stderr, "New topic added\n");
+
+    sendToClients();
+}
+
+void sendToClients()
+{
+    /*while()
+    {
+        pthread_mutex_lock();
+        write();
+    }*/
 }
 
 void listAllUsers(pClient clientList)

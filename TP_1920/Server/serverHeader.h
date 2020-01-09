@@ -60,8 +60,6 @@ void addNewTopic(pTopic, pTopic);
 
 int sendTextToVerifier(int, int, pText);
 
-void removeExpiredMsg(pText);
-
 void listAllTopics(pTopic);
 void listAllUsers(pClient);
 void listAllMesages(pTopic);

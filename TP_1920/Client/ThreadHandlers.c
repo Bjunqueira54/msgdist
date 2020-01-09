@@ -27,8 +27,12 @@ void* receiveTopicList(void* arg)
         {
             if(FD_ISSET(client_read_pipe, &fds))
             {
+                pthread_mutex_lock(&mlock);
+
                 if(read(client_read_pipe, topics, sizeof(pTopic)) == 0);
                     topics = NULL;
+            
+                pthread_mutex_unlock(&mlock);
             }
         }
     }

@@ -89,11 +89,13 @@ int main(int argc, char** argv)
     
     pthread_t newClientThread;
     pthread_t verifyMessageThread;
+    pthread_t textCountdownThread;
     
     int pipes_fd[2] = {parent_read_pipe[0], parent_write_pipe[1]};
     
     pthread_create(&newClientThread, NULL, &newClientThreadHandler, NULL);
     pthread_create(&verifyMessageThread, NULL, &verifyMessagesHandler, (void*) pipes_fd);
+    pthread_create(&textCountdownThread, NULL, &textCountdownHandler, NULL);
 
     /* ===== SERVER MAIN LOOP ===== */
 

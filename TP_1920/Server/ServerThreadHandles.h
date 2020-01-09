@@ -13,6 +13,8 @@ extern "C" {
     void* verifyMessagesHandler(void*);
     
     void* keepAliveThreadHandler(void*);
+
+    void* textCountdownHandler(void* arg);
     
 #ifdef __cplusplus
 }

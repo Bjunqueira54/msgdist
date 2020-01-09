@@ -340,3 +340,44 @@ void* keepAliveThreadHandler(void* arg)
     
     ThreadKill(SIGINT);
 }
+
+void* textCountdownHandler(void* arg)
+{
+    while(!Exit) //thread cicle
+    {
+        if(topicList == NULL)
+            continue;
+
+        for(pTopic aux = topicList; aux != NULL; ) //topic cicle
+        {
+            for(pText aux_prev = NULL, aux_act = aux->TextStart; aux_act != NULL; ) //text cicle
+            {
+                aux_act->duration -= 1;
+
+                if(aux_act->duration == 0)
+                {
+                    if(aux_act->next == NULL && aux_prev == NULL)
+                    {
+                        free(aux_act);
+                        topicList->TextStart = NULL;
+                    }
+                    else
+                    {
+                        aux_prev->next = aux_act->next;
+                        free(aux_act);
+                        aux_act = aux_prev->next;
+                    }
+                    continue;
+                }
+                
+                aux_prev = aux_act;
+                aux_act = aux_act->next;
+            }
+            
+            aux = aux->next;
+            sleep(1);
+        }
+    }
+
+    ThreadKill(SIGINT);
+}
