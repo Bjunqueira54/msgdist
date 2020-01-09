@@ -16,7 +16,7 @@ void SIGUSR1_Handler(int signal, siginfo_t* info, void* extra) //Client
     pText text;
 
     //tem de ler todas
-    read(client_read_pipe, text, sizeof(pText));
+    read(client_read_pipe, text, sizeof(Text));
 
     //continue
 }

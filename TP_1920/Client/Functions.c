@@ -167,8 +167,12 @@ void PrintMenu()
         
         mvwaddstr(stdscr, 2, 2, "Current Topics:");
         
+        pthread_mutex_lock(&mlock);
+        
         for(pTopic aux = topicList; y < getmaxy(stdscr) - 1 && aux != NULL; y++, aux = aux->next)
             mvwaddstr(stdscr, y, x, aux->title);
+        
+        pthread_mutex_lock(&mlock);
     }
 
     refresh();

@@ -10,15 +10,6 @@ void* receiveTopicList(void* arg)
 {
     signal(SIGINT, threadKill);
     signal(SIGUSR2, SIGUSR2_Handler);
-
-    pTopic tmp_topic = topicList;
-    
-    for(pTopic aux = NULL; tmp_topic != NULL; ) //free old topic list
-    {
-        aux = tmp_topic->next;
-        free(tmp_topic);
-        tmp_topic = aux;
-    }
     
     fd_set fds;
     struct timeval t;
@@ -31,21 +22,38 @@ void* receiveTopicList(void* arg)
         t.tv_sec = 1; //seconds
         t.tv_usec = 0; //micro-seconds
 
-        if(select(client_read_pipe + 1, &fds, NULL, NULL, &t) > 0);
+        if(select(client_read_pipe + 1, &fds, NULL, NULL, &t) > 0)
         {
             if(FD_ISSET(client_read_pipe, &fds))
             {
                 pthread_mutex_lock(&mlock);
 
-                pTopic newTopic = malloc(sizeof(pTopic));
-                
-                while(tmp_topic != NULL)
-                    tmp_topic = tmp_topic->next;
+                pTopic newTopic = malloc(sizeof(Topic));
 
-                if(read(client_read_pipe, newTopic, sizeof(pTopic)) == 0);
-                    newTopic = NULL;
-                
-                tmp_topic->next = newTopic;
+                if(read(client_read_pipe, newTopic, sizeof(Topic)) > 0)
+                {
+                    if(topicList == NULL)
+                    {
+                        topicList = newTopic;
+                        topicList->next = NULL;
+                        topicList->prev = NULL;
+                        topicList->id = 1;
+                    }
+                    else
+                    {
+                        pTopic topic_it;
+                        for(topic_it = topicList; topic_it->next != NULL;)
+                            topic_it = topic_it->next;
+                        
+                        topic_it->next = newTopic;
+                        newTopic->prev = topic_it;
+                        newTopic->id = topic_it->id + 1;
+                    }
+                }
+                else
+                {
+                    free(newTopic);
+                }
             
                 pthread_mutex_unlock(&mlock);
             }

@@ -197,41 +197,19 @@ int countMsgs(pText m)
     return num;
 }
 
-void addNewTopic(pTopic first, pTopic newTopic)
-{
-    if(first == NULL)
-    {
-        newTopic->next = newTopic->prev = NULL;
-        first = newTopic;
-        fprintf(stderr, "New topic added\n");
-        return;
-    }
-    
-    pTopic aux = first;
-    
-    if(aux->next == NULL)
-        aux->next = newTopic;
-    else
-    {
-        while(aux->next != NULL)
-            aux = aux->next;
-        
-        aux->next = newTopic;
-    }
-
-    fprintf(stderr, "New topic added\n");
-
-    sendToClients();
-}
-
 void sendToClients()
 {
     pthread_mutex_lock(&topic_lock);
     for(pClient aux_c = clientList; aux_c != NULL; aux_c = aux_c->next)
     {
-        for(pTopic aux_t = topicList; aux_t != NULL; aux_t = aux_t->next)
+        for(pTopic topic_it = topicList; topic_it != NULL; topic_it = topic_it->next)
         {
-            write(aux_c->c_pipe, aux_t, sizeof(pTopic));
+            Topic aux;
+            
+            aux.id = topic_it->id;
+            strcpy(aux.title, topic_it->title);
+            
+            write(aux_c->c_pipe, &aux, sizeof(Topic));
         }
     }
     pthread_mutex_unlock(&topic_lock);
@@ -299,7 +277,7 @@ void listAllTopics(pTopic list)
 
 void deleteMsg(pTopic list)
 {
-
+    printf("\nComando reconhecido\n");
 }
 
 void deleteEmptyTopics(pTopic list)

@@ -60,8 +60,9 @@ pClient addNewClient(pClient listStart, pClient newClient)
     aux->next = newClient;
     newClient->prev = aux;
     
-    
     pthread_mutex_unlock(&client_lock); //Unlock semaphore
+    
+    sendToClients();
     
     return listStart;
 }

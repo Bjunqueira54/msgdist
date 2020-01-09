@@ -207,6 +207,7 @@ void* verifyMessagesHandler(void* arg)
             topicList->id = 1;  //ids start from 1
             topicList->next = topicList->prev = NULL;
             pthread_mutex_unlock(&topic_lock);
+            sendToClients();
             continue;
         }
         
@@ -232,6 +233,7 @@ void* verifyMessagesHandler(void* arg)
             
             pthread_mutex_unlock(&temp_text_lock);
             pthread_mutex_unlock(&topic_lock);
+            sendToClients();
             continue;
         }
         else //Add to global linked list
@@ -263,6 +265,7 @@ void* verifyMessagesHandler(void* arg)
             }
         }
         pthread_mutex_unlock(&topic_lock);
+        sendToClients();
     }
     pthread_exit((void*) NULL);
 }
