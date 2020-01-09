@@ -1,7 +1,7 @@
 #include "clientHeader.h"
 
 bool Exit;
-
+pTopic topicList;
 pthread_mutex_t mlock;
 
 //Client
@@ -41,7 +41,7 @@ int main(int argc, char** argv)
     ////////////////////////
 
     Exit = false;
-    pTopic TopicList = NULL;
+    pTopic topicList = NULL;
     int current_topic_id = 0;
 
     //////////////////////////
@@ -50,6 +50,7 @@ int main(int argc, char** argv)
 
     struct sigaction sigUSR1;
 
+    memset(&sigUSR1, 0, sizeof(sigUSR1));
     sigUSR1.sa_flags = SA_SIGINFO;
     sigUSR1.sa_sigaction = &SIGUSR1_Handler;
     sigaction(SIGUSR1, &sigUSR1, NULL);
@@ -85,7 +86,7 @@ int main(int argc, char** argv)
 
     pthread_t serverReadThread;
     
-    pthread_create(&serverReadThread, NULL, &receiveTopicList, TopicList);
+    pthread_create(&serverReadThread, NULL, &receiveTopicList, NULL);
     
     drawBox(stdscr);
     mvwaddstr(stdscr, 1, 1, "Welcome to MSGDIST!");
@@ -93,22 +94,22 @@ int main(int argc, char** argv)
     
     do
     {
-        PrintMenu(TopicList);
+        PrintMenu();
         
         switch(tolower(getch()))
         {
         case 'n':
             if(current_topic_id == 0)
-                newMessage(TopicList);
+                newMessage(topicList);
             else
             {
                 //How can current_topic_id not be 0 and this be NULL?
                 //You know what they say: Better safe than SegmentationFault
-                if(TopicList == NULL)
-                    newMessage(TopicList);
+                if(topicList == NULL)
+                    newMessage(topicList);
                 else
                 {
-                    pTopic aux = TopicList;
+                    pTopic aux = topicList;
 
                     while(aux != NULL)
                     {
@@ -146,7 +147,9 @@ int main(int argc, char** argv)
         case 27:
             Exit = true;
             break;
-        default:
+        default: //number written
+            
+
             break;
         }
         refresh();

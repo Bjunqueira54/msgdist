@@ -11,7 +11,15 @@ void* receiveTopicList(void* arg)
     signal(SIGINT, threadKill);
     signal(SIGUSR2, SIGUSR2_Handler);
 
-    pTopic topics = (pTopic) arg;
+    pTopic tmp_topic = topicList;
+    
+    for(pTopic aux = NULL; tmp_topic != NULL; ) //free old topic list
+    {
+        aux = tmp_topic->next;
+        free(tmp_topic);
+        tmp_topic = aux;
+    }
+    
     fd_set fds;
     struct timeval t;
 
@@ -29,13 +37,21 @@ void* receiveTopicList(void* arg)
             {
                 pthread_mutex_lock(&mlock);
 
-                if(read(client_read_pipe, topics, sizeof(pTopic)) == 0);
-                    topics = NULL;
+                pTopic newTopic = malloc(sizeof(pTopic));
+                
+                while(tmp_topic != NULL)
+                    tmp_topic = tmp_topic->next;
+
+                if(read(client_read_pipe, newTopic, sizeof(pTopic)) == 0);
+                    newTopic = NULL;
+                
+                tmp_topic->next = newTopic;
             
                 pthread_mutex_unlock(&mlock);
             }
         }
+
     }
-    
+
     threadKill(SIGINT);
 }

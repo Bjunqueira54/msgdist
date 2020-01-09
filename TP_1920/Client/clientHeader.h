@@ -40,6 +40,7 @@ extern "C" {
     extern int server_write_pipe;
 
     extern pthread_mutex_t mlock;
+    extern pTopic topicList;
 
 #ifdef __cplusplus
 }

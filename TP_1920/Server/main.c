@@ -45,12 +45,13 @@ int main(int argc, char** argv)
 
     int maxMessage, maxNot;
     char *wordNot, cmd[CMD_SIZE];
-    struct sigaction cAlarm, cUSR1;
+    struct sigaction cUSR1;
     
     /* ===== SIGNAL HANDLING ===== */
 
     signal(SIGINT, terminateServer);
     
+    memset(&cUSR1, 0, sizeof(cUSR1));
     cUSR1.sa_flags = SA_SIGINFO;
     cUSR1.sa_sigaction = &SIGUSR1_Handler;
     sigaction(SIGUSR1, &cUSR1, NULL);
@@ -140,7 +141,11 @@ int main(int argc, char** argv)
         {
             listAllTopics(topicList);
         }
-        else if(strcmp(parsedCmd[0], "prune") == 0)
+        else if(strcmp(parsedCmd[0], "del") == 0)
+        {
+            deleteMsg(topicList);
+        }
+        else if(strcmp(parsedCmd[0], "prune") == 0) //done
         {
             deleteEmptyTopics(topicList);
         }

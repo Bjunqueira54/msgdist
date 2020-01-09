@@ -151,21 +151,25 @@ void newNotification(const char* notice_str)
     DestroyWindow(notification);
 }
 
-void PrintMenu(pTopic TopicList)
+void PrintMenu()
 {
-    if(TopicList == NULL)
+    clear();
+    drawBox(stdscr);
+    
+    if(topicList == NULL)
+    {
+        mvwaddstr(stdscr, 2, 2, "Currently there are no topics");
         return;
+    }
     else
     {
-        drawBox(stdscr);
+        int y = 2, x = 1;
         
-        int y = 1, x = 1;
-        
-        for(pTopic aux = TopicList; y < getmaxy(stdscr) - 1 && aux != NULL; y++, aux = aux->next)
-        {
+        for(pTopic aux = topicList; y < getmaxy(stdscr) - 1 && aux != NULL; y++, aux = aux->next)
             mvwaddstr(stdscr, y, x, aux->title);
-        }
     }
+
+    refresh();
 }
 
 //Un-optimized. Write logic now, create sub-functions later

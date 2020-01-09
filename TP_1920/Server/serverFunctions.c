@@ -226,11 +226,15 @@ void addNewTopic(pTopic first, pTopic newTopic)
 
 void sendToClients()
 {
-    /*while()
+    pthread_mutex_lock(&topic_lock);
+    for(pClient aux_c = clientList; aux_c != NULL; aux_c = aux_c->next)
     {
-        pthread_mutex_lock();
-        write();
-    }*/
+        for(pTopic aux_t = topicList; aux_t != NULL; aux_t = aux_t->next)
+        {
+            write(aux_c->c_pipe, aux_t, sizeof(pTopic));
+        }
+    }
+    pthread_mutex_unlock(&topic_lock);
 }
 
 void listAllUsers(pClient clientList)
@@ -293,24 +297,43 @@ void listAllTopics(pTopic list)
     while(aux != NULL);
 }
 
+void deleteMsg(pTopic list)
+{
+
+}
+
 void deleteEmptyTopics(pTopic list)
 {
     if(list == NULL)
         return;
 
-    pTopic aux = list, aux_n = list->next;
+    pTopic aux_prev = NULL, aux_act = list;
 
     printf("Deleting all empty topics from the server.\n");
 
+    if(list->next == NULL)
+    {
+        free(aux_act);
+        list = NULL;
+    }
+
+    aux_prev = aux_act;
+    aux_act = aux_act->next;
+
     do
     {
-        if(aux_n->TextStart == NULL)
-            printf("apagar"); //por terminar
+        if(aux_act->TextStart == NULL)
+        {
+            pTopic tmp = aux_act;
+            aux_prev->next = aux_act->next;
+            free(tmp);
+            aux_act = aux_act->next;
+        }
 
-        aux = aux_n;
-        aux_n = aux_n->next;
+        aux_prev = aux_act;
+        aux_act = aux_act->next;
     }
-    while(aux != NULL);
+    while(aux_act != NULL);
 }
 
 void killAllClients(pClient clientList)
