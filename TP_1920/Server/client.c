@@ -17,12 +17,12 @@ pClient addNewClient(pClient listStart, pClient newClient)
     pthread_mutex_lock(&client_lock); //Lock semaphore
 
     int subfix = 1; //1
-    char num_ext[2];
 
     do
     {
         if(strcmp(aux->username, newClient->username) == 0) //test existing name
         {
+            char num_ext[2];
             sprintf(num_ext, "%d", subfix);
             if(strlen(newClient->username) == MAXUSERLEN)
             {
