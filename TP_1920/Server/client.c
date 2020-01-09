@@ -15,31 +15,51 @@ pClient addNewClient(pClient listStart, pClient newClient)
     pClient aux = listStart;
 
     pthread_mutex_lock(&client_lock); //Lock semaphore
-    
-    if(aux->next == NULL)
-        aux->next = newClient;
-    else
+
+    int subfix = 1; //1
+    char num_ext[2];
+
+    do
     {
-        int subfix = 1; //1
-        
-        while(aux->next != NULL)
+        if(strcmp(aux->username, newClient->username) == 0) //test existing name
         {
-            if(strcmp(aux->username, newClient->username) == 0) //test existing name
+            sprintf(num_ext, "%d", subfix);
+            if(strlen(newClient->username) == MAXUSERLEN)
             {
-                char newUsername[MAXUSERLEN]; //2
-                strcpy(newUsername, newClient->username); //3
-                memset(newClient->username, 0, MAXUSERLEN); //4
-                snprintf(newClient->username, MAXUSERLEN, "%s%d", newClient->username, subfix);
-                aux = listStart; //5
-                subfix++; //6
-                continue; //7
+                if(subfix > 9)
+                {
+                    newClient->username[strlen(newClient->username) - 2] = num_ext[0];
+                    newClient->username[strlen(newClient->username) - 1] = num_ext[1];
+                }
+                else
+                    newClient->username[strlen(newClient->username) - 1] = num_ext[0];
+            }
+            else
+            {
+                if(subfix > 9)
+                {
+                    newClient->username[strlen(newClient->username) + 1] = num_ext[0];
+                    newClient->username[strlen(newClient->username)] = num_ext[1];
+                }
+                else
+                {
+                    newClient->username[strlen(newClient->username) + 1] = '\0';
+                    newClient->username[strlen(newClient->username)] = num_ext[0];
+                }
             }
 
-            aux = aux->next;
+            aux = listStart; //5
+            subfix++; //6
+            continue; //7
         }
 
-        aux->next = newClient;
+        aux = aux->next;
     }
+    while(aux->next != NULL);
+
+    aux->next = newClient;
+    newClient->prev = aux;
+    
     
     pthread_mutex_unlock(&client_lock); //Unlock semaphore
     
