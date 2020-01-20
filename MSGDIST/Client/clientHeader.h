@@ -35,6 +35,7 @@ extern "C" {
 #include "ThreadHandlers.h"
 #include "PipeFunctions.h"
 
+    extern pthread_t serverReadThread; //MUDANCA AQUI <----------
     extern bool Exit;
     extern int client_read_pipe;
     extern int server_write_pipe;

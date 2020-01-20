@@ -35,7 +35,7 @@ void createPipes(const char* username)
     
     //Open Server Main Pipe and write client info
     
-    client_read_pipe = open(server_main_pipe, O_WRONLY);
+    client_read_pipe = open(server_main_pipe, O_RDWR); //MUDANCA EFETUADA <----------
     
     if(client_read_pipe == -1)
     {
@@ -61,7 +61,7 @@ void createPipes(const char* username)
         exit(EXIT_FAILURE);
     }
     
-    client_read_pipe = open(client_main_pipe_path, O_RDONLY);
+    client_read_pipe = open(client_main_pipe_path, O_RDWR); //MUDANCA EFETUADA <----------
     
     if(client_read_pipe == -1)
     {
@@ -77,7 +77,7 @@ void createPipes(const char* username)
     snprintf(pipe_name_temp, 15, PIPE_SV, self_pid);
     snprintf(server_main_pipe_path, 50, "%s/%s", MSGDIST_DIR, pipe_name_temp);
     
-    server_write_pipe = open(server_main_pipe_path, O_WRONLY);
+    server_write_pipe = open(server_main_pipe_path, O_RDWR); //MUDANCA EFETUADA <----------
     
     if(server_write_pipe == -1)
     {

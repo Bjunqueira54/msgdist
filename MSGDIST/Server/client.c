@@ -17,8 +17,8 @@ pClient addNewClient(pClient listStart, pClient newClient)
     pthread_mutex_lock(&client_lock); //Lock semaphore
 
     int subfix = 1; //1
-
-    do
+    
+    while(aux->next != NULL) //MUDANCA EFETUADA <----------
     {
         if(strcmp(aux->username, newClient->username) == 0) //test existing name
         {
@@ -55,9 +55,8 @@ pClient addNewClient(pClient listStart, pClient newClient)
 
         aux = aux->next;
     }
-    while(aux->next != NULL);
-
-    aux->next = newClient;
+    
+    aux->next = newClient; //MUDANCA EFETUADA <---------------
     newClient->prev = aux;
     
     pthread_mutex_unlock(&client_lock); //Unlock semaphore
@@ -97,7 +96,7 @@ pClient populateClientStruct(pClient newClient)
     snprintf(pipe_name, 15, PIPE_CL, newClient->c_PID);
     snprintf(pipe_path, 50, "%s/%s", MSGDIST_DIR, pipe_name);
 
-    newClient->c_pipe = open(pipe_path, O_WRONLY);
+    newClient->c_pipe = open(pipe_path, O_RDWR); //MUDANCA EFETUADA <----------
     
     if(newClient->c_pipe == -1) //Opening error
     {
@@ -119,7 +118,7 @@ pClient populateClientStruct(pClient newClient)
     snprintf(pipe_name, 15, PIPE_SV, newClient->c_PID);
     snprintf(pipe_path, 50, "%s/%s", MSGDIST_DIR, pipe_name);
 
-    newClient->s_pipe = open(pipe_path, O_RDONLY);
+    newClient->s_pipe = open(pipe_path, O_RDWR); //MUDANCA EFETUADA <----------
     
     if(newClient->s_pipe == -1) //Opening error
     {

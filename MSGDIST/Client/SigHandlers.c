@@ -5,10 +5,17 @@
 //main() hangs on getch() and doesn't
 //recheck Exit. Not too serious, but not
 //perfect either.
-void SIGINT_Handler(int arg)
+void SIGINT_Handler(int arg) //MUDANCA FEITA AQUI PARA O CLIENTE RECEBER SIGINT <----------
 {
-    Exit = true;
+    //Exit = true;
     printf("Server sent a SIGINT\n");
+    printf("Client will shutdown\n");
+    pthread_kill(serverReadThread, SIGINT);
+    pthread_join(serverReadThread, NULL);
+    endwin();
+    close(client_read_pipe);
+    close(server_write_pipe);
+    exit(EXIT_SUCCESS);
 }
 
 void SIGUSR1_Handler(int signal, siginfo_t* info, void* extra) //Client

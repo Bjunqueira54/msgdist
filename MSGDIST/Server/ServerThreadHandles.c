@@ -42,7 +42,6 @@ void* newClientThreadHandler(void* arg)
                 pClient newClient = malloc(sizeof(Client));
                 
                 int n = read(pipe_fd, buffer, sizeof(char) * 50);
-                
                 if(n > 0)
                 {
                     char** client_info = stringParser(buffer);

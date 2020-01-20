@@ -3,6 +3,7 @@
 bool Exit;
 pTopic topicList;
 pthread_mutex_t mlock;
+pthread_t serverReadThread; //MOVER DE BAIXO PARA AQUI <----------
 
 //Client
 int main(int argc, char** argv)
@@ -84,8 +85,6 @@ int main(int argc, char** argv)
     ///Thread Start///
     //////////////////
 
-    pthread_t serverReadThread;
-    
     pthread_create(&serverReadThread, NULL, &receiveTopicList, NULL);
     
     drawBox(stdscr);
